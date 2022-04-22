@@ -52,7 +52,7 @@ struct Interaction {
     // Interaction Public Methods
     Interaction() : time(0) {}
     Interaction(const Point3f &p, const Normal3f &n, const Vector3f &pError,
-                const Vector3f &wo, Float time,
+                const Vector3f &wo, const Vector4f &wvls, Float time,
                 const MediumInterface &mediumInterface)
         : p(p),
           time(time),
@@ -76,10 +76,10 @@ struct Interaction {
         Vector3f d = target - origin;
         return Ray(origin, d, 1 - ShadowEpsilon, time, GetMedium(d));
     }
-    Interaction(const Point3f &p, const Vector3f &wo, Float time,
+    Interaction(const Point3f &p, const Vector3f &wo, const Vector4f &wvls, Float time,
                 const MediumInterface &mediumInterface)
         : p(p), time(time), wo(wo), mediumInterface(mediumInterface) {}
-    Interaction(const Point3f &p, Float time,
+    Interaction(const Point3f &p, const Vector4f &wvls, Float time,
                 const MediumInterface &mediumInterface)
         : p(p), time(time), mediumInterface(mediumInterface) {}
     bool IsMediumInteraction() const { return !IsSurfaceInteraction(); }
@@ -96,6 +96,7 @@ struct Interaction {
     Float time;
     Vector3f pError;
     Vector3f wo;
+    Vector4f wvls;
     Normal3f n;
     MediumInterface mediumInterface;
 };
@@ -104,7 +105,7 @@ class MediumInteraction : public Interaction {
   public:
     // MediumInteraction Public Methods
     MediumInteraction() : phase(nullptr) {}
-    MediumInteraction(const Point3f &p, const Vector3f &wo, Float time,
+    MediumInteraction(const Point3f &p, const Vector3f &wo, const Vector4f &wvls, Float time,
                       const Medium *medium, const PhaseFunction *phase)
         : Interaction(p, wo, time, medium), phase(phase) {}
     bool IsValid() const { return phase != nullptr; }
@@ -121,7 +122,8 @@ class SurfaceInteraction : public Interaction {
     SurfaceInteraction(const Point3f &p, const Vector3f &pError,
                        const Point2f &uv, const Vector3f &wo,
                        const Vector3f &dpdu, const Vector3f &dpdv,
-                       const Normal3f &dndu, const Normal3f &dndv, Float time,
+                       const Normal3f &dndu, const Normal3f &dndv, 
+                       const Vector4f &wvls, Float time,
                        const Shape *sh,
                        int faceIndex = 0);
     void SetShadingGeometry(const Vector3f &dpdu, const Vector3f &dpdv,
