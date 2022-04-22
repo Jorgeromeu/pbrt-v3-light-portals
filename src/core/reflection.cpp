@@ -147,6 +147,39 @@ std::string SpecularReflection::ToString() const {
            std::string(" fresnel: ") + fresnel->ToString() + std::string(" ]");
 }
 
+Spectrum DispersiveSpecularTransmission::Sample_f(const Vector3f &wo, Vector3f *wi,
+                                                  const Vector4f &wvls, const Point2f &sample,
+                                                  Float *pdf, BxDFType *sampledType) const {
+    // Figure out which $\eta$ is incident and which is transmitted
+    // and then compute actual $\eta$ based on the primary wavelength
+    bool entering = CosTheta(wo) > 0;
+    const Float _eta = eta(wvls[0]);
+    Float etaI = entering ? _eta : 1.0 / _eta;
+    Float etaT = entering ? 1.0 / _eta : _eta;
+
+    // Compute ray direction for specular transmission
+    if (!Refract(wo, Faceforward(Normal3f(0, 0, 1), wo), etaI / etaT, wi))
+        return 0;
+
+    // Note; doing this on the fly is probably murder?
+    const auto fresnel = FresnelDielectric(etaI, etaT);
+
+    *pdf = 1;
+    Spectrum ft = T * (Spectrum(1.) - fresnel.Evaluate(CosTheta(*wi)));
+    // Account for non-symmetry with transmission to different medium
+    if (mode == TransportMode::Radiance) ft *= (etaI * etaI) / (etaT * etaT);
+    return ft / AbsCosTheta(*wi);
+}
+
+std::string DispersiveSpecularTransmission::ToString() const {
+    return std::string("[ DispersiveSpecularTransmission: T: ") + T.ToString() +
+           StringPrintf(" cauchyB: %f cauchyC: %f ", cauchyB, cauchyC) +
+           std::string(" mode : ") +
+           (mode == TransportMode::Radiance ? std::string("RADIANCE")
+                                            : std::string("IMPORTANCE")) +
+           std::string(" ]");
+}
+
 Spectrum SpecularTransmission::Sample_f(const Vector3f &wo, Vector3f *wi,
                                         const Point2f &sample, Float *pdf,
                                         BxDFType *sampledType) const {

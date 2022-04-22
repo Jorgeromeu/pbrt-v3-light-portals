@@ -332,6 +332,43 @@ class SpecularReflection : public BxDF {
     const Fresnel *fresnel;
 };
 
+class DispersiveSpecularTransmission : public BxDF {
+public:
+  // DispersiveSpecularTransmission constructors
+  DispersiveSpecularTransmission(const Spectrum &T, 
+    Float etaAMin, Float etaAMax,
+    Float etaBMin, Float etaBMax,
+    TransportMode mode)
+  : BxDF(BxDFType(BSDF_TRANSMISSION | BSDF_SPECULAR)),
+    T(T), mode(mode) {
+    const Float lambdaMinSq = sampledLambdaStart * sampledLambdaStart;
+    const Float lambdaMaxSq = sampledLambdaEnd * sampledLambdaEnd;
+    const Float etaMin = etaBMin / etaAMin;
+    const Float etaMax = etaBMax / etaAMax;
+    cauchyB = (lambdaMinSq * etaMax - lambdaMaxSq * etaMin)
+            / (lambdaMinSq - lambdaMaxSq);
+    cauchyC = lambdaMinSq * (etaMax - cauchyB);
+  }
+
+  // DispersiveSpecularTransmission public methods
+  Spectrum f(const Vector3f &wo, const Vector3f &wi) const {  return Spectrum(0.f); }
+  Spectrum Sample_f(const Vector3f &wo, Vector3f *wi, const Vector4f &wvls,
+                    const Point2f &sample, Float *pdf, BxDFType *sampledType) const;
+  Float Pdf(const Vector3f &wo, const Vector3f &wi) const { return 0; }
+  std::string ToString() const;
+
+private:
+  // DispersiveSpecularTransmission private methods
+  Float eta(Float wvl) const { 
+    return cauchyB + cauchyC / (wvl * wvl);
+  }
+
+  // DispersiveSpecularTransmission private data
+  const Spectrum T;
+  const TransportMode mode;
+  Float cauchyB, cauchyC;
+};
+
 class SpecularTransmission : public BxDF {
   public:
     // SpecularTransmission Public Methods
