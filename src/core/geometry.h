@@ -277,10 +277,136 @@ inline std::ostream &operator<<(std::ostream &os, const Vector3<Float> &v) {
     return os;
 }
 
+
+template <typename T>
+class Vector4 {
+  public:
+    // Vector4 Public Methods
+    T operator[](int i) const {
+        DCHECK(i >= 0 && i <= 3);
+        if (i == 0) return x;
+        if (i == 1) return y;
+        if (i == 2) return z;
+        return w;
+    }
+    T &operator[](int i) {
+        DCHECK(i >= 0 && i <= 3);
+        if (i == 0) return x;
+        if (i == 1) return y;
+        if (i == 2) return z;
+        return w;
+    }
+    Vector4() { x = y = z = w = 0; }
+    Vector4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) { DCHECK(!HasNaNs()); }
+    bool HasNaNs() const { return isNaN(x) || isNaN(y) || isNaN(z) || isNaN(w); }
+    // explicit Vector4(const Point4<T> &p);
+#ifndef NDEBUG
+    // The default versions of these are fine for release builds; for debug
+    // we define them so that we can add the Assert checks.
+    Vector4(const Vector4<T> &v) {
+        DCHECK(!v.HasNaNs());
+        x = v.x;
+        y = v.y;
+        z = v.z;
+        w = v.w;
+    }
+
+    Vector4<T> &operator=(const Vector4<T> &v) {
+        DCHECK(!v.HasNaNs());
+        x = v.x;
+        y = v.y;
+        z = v.z;
+        w = v.w;
+        return *this;
+    }
+#endif  // !NDEBUG
+    Vector4<T> operator+(const Vector4<T> &v) const {
+        DCHECK(!v.HasNaNs());
+        return Vector4(x + v.x, y + v.y, z + v.z, w + v.w);
+    }
+    Vector4<T> &operator+=(const Vector4<T> &v) {
+        DCHECK(!v.HasNaNs());
+        x += v.x;
+        y += v.y;
+        z += v.z;
+        w += v.w;
+        return *this;
+    }
+    Vector4<T> operator-(const Vector4<T> &v) const {
+        DCHECK(!v.HasNaNs());
+        return Vector4(x - v.x, y - v.y, z - v.z, w - v.w);
+    }
+    Vector4<T> &operator-=(const Vector4<T> &v) {
+        DCHECK(!v.HasNaNs());
+        x -= v.x;
+        y -= v.y;
+        z -= v.z;
+        w -= v.w;
+        return *this;
+    }
+    bool operator==(const Vector4<T> &v) const {
+        return x == v.x && y == v.y && z == v.z && w == v.w;
+    }
+    bool operator!=(const Vector4<T> &v) const {
+        return x != v.x || y != v.y || z != v.z || w != v.w;
+    }
+    template <typename U>
+    Vector4<T> operator*(U s) const {
+        return Vector4<T>(s * x, s * y, s * z, s * w);
+    }
+    template <typename U>
+    Vector4<T> &operator*=(U s) {
+        DCHECK(!isNaN(s));
+        x *= s;
+        y *= s;
+        z *= s;
+        w *= s;
+        return *this;
+    }
+    template <typename U>
+    Vector4<T> operator/(U f) const {
+        CHECK_NE(f, 0);
+        Float inv = (Float)1 / f;
+        return Vector4<T>(x * inv, y * inv, z * inv, w * inv);
+    }
+
+    template <typename U>
+    Vector4<T> &operator/=(U f) {
+        CHECK_NE(f, 0);
+        Float inv = (Float)1 / f;
+        x *= inv;
+        y *= inv;
+        z *= inv;
+        w *= inv;
+        return *this;
+    }
+    Vector4<T> operator-() const { return Vector4<T>(-x, -y, -z, -w); }
+    Float LengthSquared() const { return x * x + y * y + z * z + w * w; }
+    Float Length() const { return std::sqrt(LengthSquared()); }
+    // explicit Vector4(const Normal3<T> &n);
+
+    // Vector4 Public Data
+    T x, y, z, w;
+};
+
+template <typename T>
+inline std::ostream &operator<<(std::ostream &os, const Vector4<T> &v) {
+    os << "[ " << v.x << ", " << v.y << ", " << v.z << ", " << v.w << " ]";
+    return os;
+}
+
+template <>
+inline std::ostream &operator<<(std::ostream &os, const Vector4<Float> &v) {
+    os << StringPrintf("[ %f, %f, %f, %f ]", v.x, v.y, v.z, v.w);
+    return os;
+}
+
 typedef Vector2<Float> Vector2f;
 typedef Vector2<int> Vector2i;
 typedef Vector3<Float> Vector3f;
 typedef Vector3<int> Vector3i;
+typedef Vector4<Float> Vector4f;
+typedef Vector4<int> Vector4i;
 
 // Point Declarations
 template <typename T>
