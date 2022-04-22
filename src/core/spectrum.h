@@ -47,7 +47,9 @@ namespace pbrt {
 // Spectrum Utility Declarations
 static const int sampledLambdaStart = 400;
 static const int sampledLambdaEnd = 700;
+static const int sampledLambdaRange = sampledLambdaEnd - sampledLambdaStart;
 static const int nSpectralSamples = 60;
+
 extern bool SpectrumSamplesSorted(const Float *lambda, const Float *vals,
                                   int n);
 extern void SortSpectrumSamples(Float *lambda, Float *vals, int n);
@@ -509,6 +511,14 @@ inline SampledSpectrum Lerp(Float t, const SampledSpectrum &s1,
 void ResampleLinearSpectrum(const Float *lambdaIn, const Float *vIn, int nIn,
                             Float lambdaMin, Float lambdaMax, int nOut,
                             Float *vOut);
+
+inline Float SampleUniformSpectrum(Float sample) {
+    return (Float)sampledLambdaStart + (Float)sampledLambdaRange * sample;
+}
+
+inline Float PdfUniformSpectrum(Float /* wvl */) {
+    return 1.0 / (Float)sampledLambdaRange;
+}
 
 }  // namespace pbrt
 
