@@ -54,7 +54,7 @@ Spectrum DistantLight::Sample_Li(const Interaction &ref, const Point2f &u,
     *pdf = 1;
     Point3f pOutside = ref.p + wLight * (2 * worldRadius);
     *vis =
-        VisibilityTester(ref, Interaction(pOutside, ref.time, mediumInterface));
+        VisibilityTester(ref, Interaction(pOutside, ref.wvls, ref.time, mediumInterface));
     return L;
 }
 

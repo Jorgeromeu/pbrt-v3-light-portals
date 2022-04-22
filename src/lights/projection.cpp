@@ -80,7 +80,7 @@ Spectrum ProjectionLight::Sample_Li(const Interaction &ref, const Point2f &u,
     *wi = Normalize(pLight - ref.p);
     *pdf = 1;
     *vis =
-        VisibilityTester(ref, Interaction(pLight, ref.time, mediumInterface));
+        VisibilityTester(ref, Interaction(pLight, ref.wvls, ref.time, mediumInterface));
     return I * Projection(-*wi) / DistanceSquared(pLight, ref.p);
 }
 
@@ -114,7 +114,7 @@ Spectrum ProjectionLight::Sample_Le(const Point2f &u1, const Point2f &u2,
                                     Float *pdfPos, Float *pdfDir) const {
     ProfilePhase _(Prof::LightSample);
     Vector3f v = UniformSampleCone(u1, cosTotalWidth);
-    *ray = Ray(pLight, LightToWorld(v), Infinity, time, mediumInterface.inside);
+    *ray = Ray(pLight, LightToWorld(v), ray->wvls, Infinity, time, mediumInterface.inside);
     *nLight = (Normal3f)ray->d;
     *pdfPos = 1.f;
     *pdfDir = UniformConePdf(cosTotalWidth);

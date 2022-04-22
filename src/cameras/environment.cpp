@@ -43,13 +43,20 @@ namespace pbrt {
 Float EnvironmentCamera::GenerateRay(const CameraSample &sample,
                                      Ray *ray) const {
     ProfilePhase prof(Prof::GenerateCameraRay);
+    
     // Compute environment camera ray direction
     Float theta = Pi * sample.pFilm.y / film->fullResolution.y;
     Float phi = 2 * Pi * sample.pFilm.x / film->fullResolution.x;
     Vector3f dir(std::sin(theta) * std::cos(phi), std::cos(theta),
                  std::sin(theta) * std::sin(phi));
-    *ray = Ray(Point3f(0, 0, 0), dir, Infinity,
+                 
+    *ray = Ray(Point3f(0, 0, 0), dir, Vector4f(0.f), Infinity,
                Lerp(sample.time, shutterOpen, shutterClose));
+                 
+    // Compute wavelengths
+    Float wwv = GenerateWvls(sample, ray);
+    if (wwv == 0) return 0;
+
     ray->medium = medium;
     *ray = CameraToWorld(*ray);
     return 1;

@@ -53,6 +53,7 @@ class Camera {
     Camera(const AnimatedTransform &CameraToWorld, Float shutterOpen,
            Float shutterClose, Film *film, const Medium *medium);
     virtual ~Camera();
+    virtual Float GenerateWvls(const CameraSample &sample, Ray *ray) const;
     virtual Float GenerateRay(const CameraSample &sample, Ray *ray) const = 0;
     virtual Float GenerateRayDifferential(const CameraSample &sample,
                                           RayDifferential *rd) const;
@@ -72,12 +73,14 @@ class Camera {
 struct CameraSample {
     Point2f pFilm;
     Point2f pLens;
+    Float wvl;
     Float time;
 };
 
 inline std::ostream &operator<<(std::ostream &os, const CameraSample &cs) {
-    os << "[ pFilm: " << cs.pFilm << " , pLens: " << cs.pLens <<
-        StringPrintf(", time %f ]", cs.time);
+    os << "[ pFilm: " << cs.pFilm << " , pLens: " << cs.pLens 
+       << StringPrintf(", time %f ]", cs.time)
+       << StringPrintf(", wvl %f ]", cs.wvl);
     return os;
 }
 

@@ -47,7 +47,7 @@ Float OrthographicCamera::GenerateRay(const CameraSample &sample,
     // Compute raster and camera sample positions
     Point3f pFilm = Point3f(sample.pFilm.x, sample.pFilm.y, 0);
     Point3f pCamera = RasterToCamera(pFilm);
-    *ray = Ray(pCamera, Vector3f(0, 0, 1));
+    *ray = Ray(pCamera, Vector3f(0, 0, 1), Vector4f());
     // Modify ray for depth of field
     if (lensRadius > 0) {
         // Sample point on lens
@@ -61,6 +61,11 @@ Float OrthographicCamera::GenerateRay(const CameraSample &sample,
         ray->o = Point3f(pLens.x, pLens.y, 0);
         ray->d = Normalize(pFocus - ray->o);
     }
+               
+    // Compute wavelengths
+    Float wwv = GenerateWvls(sample, ray);
+    if (wwv == 0) return 0;
+
     ray->time = Lerp(sample.time, shutterOpen, shutterClose);
     ray->medium = medium;
     *ray = CameraToWorld(*ray);
@@ -75,7 +80,7 @@ Float OrthographicCamera::GenerateRayDifferential(const CameraSample &sample,
     // Compute raster and camera sample positions
     Point3f pFilm = Point3f(sample.pFilm.x, sample.pFilm.y, 0);
     Point3f pCamera = RasterToCamera(pFilm);
-    *ray = RayDifferential(pCamera, Vector3f(0, 0, 1));
+    *ray = RayDifferential(pCamera, Vector3f(0, 0, 1), Vector4f());
 
     // Modify ray for depth of field
     if (lensRadius > 0) {
@@ -111,6 +116,11 @@ Float OrthographicCamera::GenerateRayDifferential(const CameraSample &sample,
         ray->ryOrigin = ray->o + dyCamera;
         ray->rxDirection = ray->ryDirection = ray->d;
     }
+                    
+    // Compute wavelengths
+    Float wwv = GenerateWvls(sample, ray);
+    if (wwv == 0) return 0;
+
     ray->time = Lerp(sample.time, shutterOpen, shutterClose);
     ray->hasDifferentials = true;
     ray->medium = medium;

@@ -63,18 +63,18 @@ struct Interaction {
     bool IsSurfaceInteraction() const { return n != Normal3f(); }
     Ray SpawnRay(const Vector3f &d) const {
         Point3f o = OffsetRayOrigin(p, pError, n, d);
-        return Ray(o, d, Infinity, time, GetMedium(d));
+        return Ray(o, d, wvls, Infinity, time, GetMedium(d));
     }
     Ray SpawnRayTo(const Point3f &p2) const {
         Point3f origin = OffsetRayOrigin(p, pError, n, p2 - p);
         Vector3f d = p2 - p;
-        return Ray(origin, d, 1 - ShadowEpsilon, time, GetMedium(d));
+        return Ray(origin, d, wvls, 1 - ShadowEpsilon, time, GetMedium(d));
     }
     Ray SpawnRayTo(const Interaction &it) const {
         Point3f origin = OffsetRayOrigin(p, pError, n, it.p - p);
         Point3f target = OffsetRayOrigin(it.p, it.pError, it.n, origin - it.p);
         Vector3f d = target - origin;
-        return Ray(origin, d, 1 - ShadowEpsilon, time, GetMedium(d));
+        return Ray(origin, d, wvls, 1 - ShadowEpsilon, time, GetMedium(d));
     }
     Interaction(const Point3f &p, const Vector3f &wo, const Vector4f &wvls, Float time,
                 const MediumInterface &mediumInterface)
@@ -107,7 +107,7 @@ class MediumInteraction : public Interaction {
     MediumInteraction() : phase(nullptr) {}
     MediumInteraction(const Point3f &p, const Vector3f &wo, const Vector4f &wvls, Float time,
                       const Medium *medium, const PhaseFunction *phase)
-        : Interaction(p, wo, time, medium), phase(phase) {}
+        : Interaction(p, wo, wvls, time, medium), phase(phase) {}
     bool IsValid() const { return phase != nullptr; }
 
     // MediumInteraction Public Data

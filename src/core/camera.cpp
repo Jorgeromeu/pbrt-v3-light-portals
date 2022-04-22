@@ -35,6 +35,7 @@
 #include "camera.h"
 #include "sampling.h"
 #include "sampler.h"
+#include "spectrum.h"
 
 namespace pbrt {
 
@@ -55,6 +56,23 @@ Camera::Camera(const AnimatedTransform &CameraToWorld, Float shutterOpen,
             "that this transform will have no scale factors in it.\n"
             "Proceed at your own risk; your image may have errors or\n"
             "the system may crash as a result of this.");
+}
+
+
+Float Camera::GenerateWvls(const CameraSample &sample, Ray *ray) const {
+    // Draw initial wavelength sample
+    Vector4f wvls;
+    wvls.x = SampleUniformSpectrum(sample.wvl);
+
+    // Stratify samples across spectrum according to Hero Sampling (Wilkie et al., 2014)
+    for (int i = 1; i < 4; ++i) {
+        Float div = (Float)i / (Float)4;
+        wvls[i] = Mod(wvls[0] - (Float)sampledLambdaStart + div * (Float)sampledLambdaRange, 
+                     (Float)sampledLambdaRange) + (Float)sampledLambdaStart;
+    }
+
+    ray->wvls = wvls;
+    return 1;
 }
 
 Float Camera::GenerateRayDifferential(const CameraSample &sample,

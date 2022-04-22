@@ -57,7 +57,7 @@ Spectrum SpotLight::Sample_Li(const Interaction &ref, const Point2f &u,
     *wi = Normalize(pLight - ref.p);
     *pdf = 1.f;
     *vis =
-        VisibilityTester(ref, Interaction(pLight, ref.time, mediumInterface));
+        VisibilityTester(ref, Interaction(pLight, ref.wvls, ref.time, mediumInterface));
     return I * Falloff(-*wi) / DistanceSquared(pLight, ref.p);
 }
 
@@ -85,7 +85,7 @@ Spectrum SpotLight::Sample_Le(const Point2f &u1, const Point2f &u2, Float time,
                               Float *pdfDir) const {
     ProfilePhase _(Prof::LightSample);
     Vector3f w = UniformSampleCone(u1, cosTotalWidth);
-    *ray = Ray(pLight, LightToWorld(w), Infinity, time, mediumInterface.inside);
+    *ray = Ray(pLight, LightToWorld(w), ray->wvls, Infinity, time, mediumInterface.inside);
     *nLight = (Normal3f)ray->d;
     *pdfPos = 1;
     *pdfDir = UniformConePdf(cosTotalWidth);

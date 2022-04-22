@@ -72,7 +72,7 @@ Float PerspectiveCamera::GenerateRay(const CameraSample &sample,
     // Compute raster and camera sample positions
     Point3f pFilm = Point3f(sample.pFilm.x, sample.pFilm.y, 0);
     Point3f pCamera = RasterToCamera(pFilm);
-    *ray = Ray(Point3f(0, 0, 0), Normalize(Vector3f(pCamera)));
+    *ray = Ray(Point3f(0, 0, 0), Normalize(Vector3f(pCamera)), Vector4f());
     // Modify ray for depth of field
     if (lensRadius > 0) {
         // Sample point on lens
@@ -86,6 +86,11 @@ Float PerspectiveCamera::GenerateRay(const CameraSample &sample,
         ray->o = Point3f(pLens.x, pLens.y, 0);
         ray->d = Normalize(pFocus - ray->o);
     }
+                 
+    // Compute wavelengths
+    Float wwv = GenerateWvls(sample, ray);
+    if (wwv == 0) return 0;
+
     ray->time = Lerp(sample.time, shutterOpen, shutterClose);
     ray->medium = medium;
     *ray = CameraToWorld(*ray);
@@ -99,7 +104,7 @@ Float PerspectiveCamera::GenerateRayDifferential(const CameraSample &sample,
     Point3f pFilm = Point3f(sample.pFilm.x, sample.pFilm.y, 0);
     Point3f pCamera = RasterToCamera(pFilm);
     Vector3f dir = Normalize(Vector3f(pCamera.x, pCamera.y, pCamera.z));
-    *ray = RayDifferential(Point3f(0, 0, 0), dir);
+    *ray = RayDifferential(Point3f(0, 0, 0), dir, Vector4f());
     // Modify ray for depth of field
     if (lensRadius > 0) {
         // Sample point on lens
@@ -136,6 +141,11 @@ Float PerspectiveCamera::GenerateRayDifferential(const CameraSample &sample,
         ray->rxDirection = Normalize(Vector3f(pCamera) + dxCamera);
         ray->ryDirection = Normalize(Vector3f(pCamera) + dyCamera);
     }
+                 
+    // Compute wavelengths
+    Float wwv = GenerateWvls(sample, ray);
+    if (wwv == 0) return 0;
+    
     ray->time = Lerp(sample.time, shutterOpen, shutterClose);
     ray->medium = medium;
     *ray = CameraToWorld(*ray);
@@ -207,7 +217,7 @@ Spectrum PerspectiveCamera::Sample_Wi(const Interaction &ref, const Point2f &u,
     // Uniformly sample a lens interaction _lensIntr_
     Point2f pLens = lensRadius * ConcentricSampleDisk(u);
     Point3f pLensWorld = CameraToWorld(ref.time, Point3f(pLens.x, pLens.y, 0));
-    Interaction lensIntr(pLensWorld, ref.time, medium);
+    Interaction lensIntr(pLensWorld, ref.wvls, ref.time, medium);
     lensIntr.n = Normal3f(CameraToWorld(ref.time, Vector3f(0, 0, 1)));
 
     // Populate arguments and compute the importance value

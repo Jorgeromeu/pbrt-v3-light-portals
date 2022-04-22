@@ -46,7 +46,7 @@
 #include "cameras/environment.h"
 #include "cameras/orthographic.h"
 #include "cameras/perspective.h"
-#include "cameras/realistic.h"
+// #include "cameras/realistic.h" // Disabled for wvl dependency
 #include "filters/box.h"
 #include "filters/gaussian.h"
 #include "filters/mitchell.h"
@@ -801,9 +801,10 @@ Camera *MakeCamera(const std::string &name, const ParamSet &paramSet,
     else if (name == "orthographic")
         camera = CreateOrthographicCamera(paramSet, animatedCam2World, film,
                                           mediumInterface.outside);
-    else if (name == "realistic")
+    /* Disabled for wvl dependency implementation */
+    /* else if (name == "realistic")
         camera = CreateRealisticCamera(paramSet, animatedCam2World, film,
-                                       mediumInterface.outside);
+                                       mediumInterface.outside); */
     else if (name == "environment")
         camera = CreateEnvironmentCamera(paramSet, animatedCam2World, film,
                                          mediumInterface.outside);

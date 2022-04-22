@@ -333,13 +333,13 @@ bool Triangle::Intersect(const Ray &ray, Float *tHit, SurfaceInteraction *isect,
     if (testAlphaTexture && mesh->alphaMask) {
         SurfaceInteraction isectLocal(pHit, Vector3f(0, 0, 0), uvHit, -ray.d,
                                       dpdu, dpdv, Normal3f(0, 0, 0),
-                                      Normal3f(0, 0, 0), ray.time, this);
+                                      Normal3f(0, 0, 0), ray.wvls, ray.time, this);
         if (mesh->alphaMask->Evaluate(isectLocal) == 0) return false;
     }
 
     // Fill in _SurfaceInteraction_ from triangle hit
     *isect = SurfaceInteraction(pHit, pError, uvHit, -ray.d, dpdu, dpdv,
-                                Normal3f(0, 0, 0), Normal3f(0, 0, 0), ray.time,
+                                Normal3f(0, 0, 0), Normal3f(0, 0, 0), ray.wvls, ray.time,
                                 this, faceIndex);
 
     // Override surface normal in _isect_ for triangle
@@ -560,7 +560,7 @@ bool Triangle::IntersectP(const Ray &ray, bool testAlphaTexture) const {
         Point2f uvHit = b0 * uv[0] + b1 * uv[1] + b2 * uv[2];
         SurfaceInteraction isectLocal(pHit, Vector3f(0, 0, 0), uvHit, -ray.d,
                                       dpdu, dpdv, Normal3f(0, 0, 0),
-                                      Normal3f(0, 0, 0), ray.time, this);
+                                      Normal3f(0, 0, 0), ray.wvls, ray.time, this);
         if (mesh->alphaMask && mesh->alphaMask->Evaluate(isectLocal) == 0)
             return false;
         if (mesh->shadowAlphaMask &&

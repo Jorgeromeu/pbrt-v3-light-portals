@@ -44,10 +44,9 @@ namespace pbrt {
 SurfaceInteraction::SurfaceInteraction(
     const Point3f &p, const Vector3f &pError, const Point2f &uv,
     const Vector3f &wo, const Vector3f &dpdu, const Vector3f &dpdv,
-    const Normal3f &dndu, const Normal3f &dndv, Float time, const Shape *shape,
-    int faceIndex)
-    : Interaction(p, Normal3f(Normalize(Cross(dpdu, dpdv))), pError, wo, time,
-                  nullptr),
+    const Normal3f &dndu, const Normal3f &dndv, const Vector4f &wvls, 
+    Float time, const Shape *shape, int faceIndex)
+    : Interaction(p, Normal3f(Normalize(Cross(dpdu, dpdv))), pError, wo, wvls, time, nullptr),
       uv(uv),
       dpdu(dpdu),
       dpdv(dpdv),

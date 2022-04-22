@@ -102,11 +102,12 @@ TEST(Triangle, Watertight) {
         u[0] = rng.UniformFloat();
         u[1] = rng.UniformFloat();
         Point3f p = Point3f(0, 0, 0) + Float(0.5) * UniformSampleSphere(u);
+        Vector4f wvls(450, 500, 550, 600);
 
         // Choose a random direction.
         u[0] = rng.UniformFloat();
         u[1] = rng.UniformFloat();
-        Ray r(p, UniformSampleSphere(u));
+        Ray r(p, UniformSampleSphere(u), wvls);
         int nHits = 0;
         for (const auto &tri : tris) {
             Float tHit;
@@ -170,7 +171,7 @@ TEST(Triangle, Reintersect) {
         for (int j = 0; j < 3; ++j) o[j] = pExp(rng);
 
         // Intersect the ray with the triangle.
-        Ray r(o, pTri.p - o);
+        Ray r(o, pTri.p - o, Vector4f(400, 475, 550, 625));
         Float tHit;
         SurfaceInteraction isect;
         if (!tri->Intersect(r, &tHit, &isect, false))
@@ -229,12 +230,12 @@ TEST(Triangle, Sampling) {
         for (int j = 0; j < count; ++j) {
             Point2f u{RadicalInverse(0, j), RadicalInverse(1, j)};
             Vector3f w = UniformSampleSphere(u);
-            if (tri->IntersectP(Ray(pc, w))) ++hits;
+            if (tri->IntersectP(Ray(pc, w, Vector4f(400, 475, 550, 625)))) ++hits;
         }
         double unifEstimate = hits / double(count * UniformSpherePdf());
 
         // Now use Triangle::Sample()...
-        Interaction ref(pc, Normal3f(), Vector3f(), Vector3f(0, 0, 1), 0,
+        Interaction ref(pc, Normal3f(), Vector3f(), Vector3f(0, 0, 1), Vector4f(400, 475, 550, 625), 0,
                         MediumInterface{});
         double triSampleEstimate = 0;
         for (int j = 0; j < count; ++j) {
@@ -288,7 +289,7 @@ TEST(Triangle, SolidAngle) {
 
         // Compute a reference value using Triangle::Sample()
         const int count = 64 * 1024;
-        Interaction ref(pc, Normal3f(), Vector3f(), Vector3f(0, 0, 1), 0,
+        Interaction ref(pc, Normal3f(), Vector3f(), Vector3f(0, 0, 1), Vector4f(400, 475, 550, 625), 0,
                         MediumInterface{});
         double triSampleEstimate = 0;
         for (int j = 0; j < count; ++j) {
@@ -323,7 +324,7 @@ static Float mcSolidAngle(const Point3f &p, const Shape &shape, int nSamples) {
     for (int i = 0; i < nSamples; ++i) {
         Point2f u{RadicalInverse(0, i), RadicalInverse(1, i)};
         Vector3f w = UniformSampleSphere(u);
-        if (shape.IntersectP(Ray(p, w), false)) ++nHits;
+        if (shape.IntersectP(Ray(p, w, Vector4f(400, 475, 550, 625)), false)) ++nHits;
     }
     return nHits / (UniformSpherePdf() * nSamples);
 }
@@ -385,7 +386,7 @@ static void TestReintersectConvex(Shape &shape, RNG &rng) {
     Point3f p2 = bbox.Lerp(t);
 
     // Ray to intersect with the shape.
-    Ray r(o, p2 - o);
+    Ray r(o, p2 - o, Vector4f(400, 475, 550, 625));
     if (rng.UniformFloat() < .5) r.d = Normalize(r.d);
 
     // We should usually (but not always) find an intersection.
@@ -464,7 +465,7 @@ TEST(ParialSphere, Normal) {
         Point3f p2 = bbox.Lerp(t);
 
         // Ray to intersect with the shape.
-        Ray r(o, p2 - o);
+        Ray r(o, p2 - o, Vector4f(400, 475, 550, 625));
         if (rng.UniformFloat() < .5) r.d = Normalize(r.d);
 
         // We should usually (but not always) find an intersection.

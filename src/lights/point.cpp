@@ -48,7 +48,7 @@ Spectrum PointLight::Sample_Li(const Interaction &ref, const Point2f &u,
     *wi = Normalize(pLight - ref.p);
     *pdf = 1.f;
     *vis =
-        VisibilityTester(ref, Interaction(pLight, ref.time, mediumInterface));
+        VisibilityTester(ref, Interaction(pLight, ref.wvls, ref.time, mediumInterface));
     return I / DistanceSquared(pLight, ref.p);
 }
 
@@ -62,7 +62,7 @@ Spectrum PointLight::Sample_Le(const Point2f &u1, const Point2f &u2, Float time,
                                Ray *ray, Normal3f *nLight, Float *pdfPos,
                                Float *pdfDir) const {
     ProfilePhase _(Prof::LightSample);
-    *ray = Ray(pLight, UniformSampleSphere(u1), Infinity, time,
+    *ray = Ray(pLight, UniformSampleSphere(u1), ray->wvls, Infinity, time,
                mediumInterface.inside);
     *nLight = (Normal3f)ray->d;
     *pdfPos = 1;

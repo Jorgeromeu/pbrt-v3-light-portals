@@ -67,15 +67,15 @@ struct EndpointInteraction : Interaction {
     EndpointInteraction(const Interaction &it, const Camera *camera)
         : Interaction(it), camera(camera) {}
     EndpointInteraction(const Camera *camera, const Ray &ray)
-        : Interaction(ray.o, ray.time, ray.medium), camera(camera) {}
+        : Interaction(ray.o, ray.wvls, ray.time, ray.medium), camera(camera) {}
     EndpointInteraction(const Light *light, const Ray &r, const Normal3f &nl)
-        : Interaction(r.o, r.time, r.medium), light(light) {
+        : Interaction(r.o, r.wvls, r.time, r.medium), light(light) {
         n = nl;
     }
     EndpointInteraction(const Interaction &it, const Light *light)
         : Interaction(it), light(light) {}
     EndpointInteraction(const Ray &ray)
-        : Interaction(ray(1), ray.time, ray.medium), light(nullptr) {
+        : Interaction(ray(1), ray.wvls, ray.time, ray.medium), light(nullptr) {
         n = Normal3f(-ray.d);
     }
 };
@@ -275,7 +275,7 @@ struct Vertex {
             // Return emitted radiance for infinite light sources
             Spectrum Le(0.f);
             for (const auto &light : scene.infiniteLights)
-                Le += light->Le(Ray(p(), -w));
+                Le += light->Le(Ray(p(), -w, Vector4f(0))); // TODO invalid wvl packet
             return Le;
         } else {
             const AreaLight *light = si.primitive->GetAreaLight();

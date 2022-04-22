@@ -136,7 +136,7 @@ bool Cylinder::Intersect(const Ray &r, Float *tHit, SurfaceInteraction *isect,
     // Initialize _SurfaceInteraction_ from parametric information
     *isect = (*ObjectToWorld)(SurfaceInteraction(pHit, pError, Point2f(u, v),
                                                  -ray.d, dpdu, dpdv, dndu, dndv,
-                                                 ray.time, this));
+                                                 ray.wvls, ray.time, this));
 
     // Update _tHit_ for quadric intersection
     *tHit = (Float)tShapeHit;

@@ -87,7 +87,7 @@ Float Shape::Pdf(const Interaction &ref, const Vector3f &wi) const {
 }
 
 Float Shape::SolidAngle(const Point3f &p, int nSamples) const {
-    Interaction ref(p, Normal3f(), Vector3f(), Vector3f(0, 0, 1), 0,
+    Interaction ref(p, Normal3f(), Vector3f(), Vector3f(0, 0, 1), Vector4f(), 0,
                     MediumInterface{});
     double solidAngle = 0;
     for (int i = 0; i < nSamples; ++i) {

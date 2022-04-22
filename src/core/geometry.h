@@ -298,6 +298,7 @@ class Vector4 {
     }
     Vector4() { x = y = z = w = 0; }
     Vector4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) { DCHECK(!HasNaNs()); }
+    Vector4(T v) : x(v), y(v), z(v), w(v) { DCHECK(!HasNaNs()); }
     bool HasNaNs() const { return isNaN(x) || isNaN(y) || isNaN(z) || isNaN(w); }
     // explicit Vector4(const Point4<T> &p);
 #ifndef NDEBUG
@@ -995,7 +996,7 @@ class Bounds2iIterator : public std::forward_iterator_tag {
 class Ray {
   public:
     // Ray Public Methods
-    Ray() : tMax(Infinity), time(0.f), wvls(0.f), medium(nullptr) {}
+    Ray() : tMax(Infinity), time(0.f), wvls(Vector4f(0.f)), medium(nullptr) {}
     Ray(const Point3f &o, const Vector3f &d, const Vector4f &wvls, 
         Float tMax = Infinity, Float time = 0.f, 
         const Medium *medium = nullptr)
@@ -1021,9 +1022,9 @@ class RayDifferential : public Ray {
   public:
     // RayDifferential Public Methods
     RayDifferential() { hasDifferentials = false; }
-    RayDifferential(const Point3f &o, const Vector3f &d, Float tMax = Infinity,
-                    Float time = 0.f, const Medium *medium = nullptr)
-        : Ray(o, d, tMax, time, medium) {
+    RayDifferential(const Point3f &o, const Vector3f &d, const Vector4f &wvls, 
+                    Float tMax = Infinity, Float time = 0.f, const Medium *medium = nullptr)
+        : Ray(o, d, wvls, tMax, time, medium) {
         hasDifferentials = false;
     }
     RayDifferential(const Ray &ray) : Ray(ray) { hasDifferentials = false; }

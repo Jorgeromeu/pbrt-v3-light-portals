@@ -399,8 +399,9 @@ void TestBSDF(void (*createBSDF)(BSDF*, MemoryArena&),
         Point3f origin(0.1, 1,
                        0);  // offset slightly so we don't hit center of disk
         Vector3f direction(0, -1, 0);
+        Vector4f wvls(450, 500, 550, 600);
         Float tHit;
-        Ray r(origin, direction);
+        Ray r(origin, direction, wvls);
         SurfaceInteraction isect;
         disk->Intersect(r, &tHit, &isect);
         bsdf = ARENA_ALLOC(arena, BSDF)(isect);

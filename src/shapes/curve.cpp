@@ -366,7 +366,7 @@ bool Curve::recursiveIntersect(const Ray &ray, Float *tHit,
             }
             *isect = (*ObjectToWorld)(SurfaceInteraction(
                 ray(*tHit), pError, Point2f(u, v), -ray.d, dpdu, dpdv,
-                Normal3f(0, 0, 0), Normal3f(0, 0, 0), ray.time, this));
+                Normal3f(0, 0, 0), Normal3f(0, 0, 0), ray.wvls, ray.time, this));
         }
         ++nHits;
         return true;
