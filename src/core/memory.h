@@ -119,6 +119,11 @@ alignas(PBRT_L1_CACHE_LINE_SIZE)
             for (size_t i = 0; i < n; ++i) new (&ret[i]) T();
         return ret;
     }
+    template <typename T>
+    T *AllocUndeclared(size_t n = 1){
+        T *ret = (T *)Alloc(n * sizeof(T));
+        return ret;
+    }
     void Reset() {
         currentBlockPos = 0;
         availableBlocks.splice(availableBlocks.begin(), usedBlocks);
