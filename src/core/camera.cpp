@@ -79,6 +79,10 @@ Float Camera::GenerateRayDifferential(const CameraSample &sample,
                                       RayDifferential *rd) const {
     Float wt = GenerateRay(sample, rd);
     if (wt == 0) return 0;
+                    
+    // Compute wavelengths
+    Float wwv = GenerateWvls(sample, rd);
+    if (wwv == 0) return 0;
 
     // Find camera ray after shifting a fraction of a pixel in the $x$ direction
     Float wtx;
