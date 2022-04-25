@@ -345,6 +345,30 @@ class Vector4 {
         w -= v.w;
         return *this;
     }
+    Vector4<T> operator*(const Vector4<T> &v) const {
+        DCHECK(!v.HasNaNs());
+        return Vector4(x * v.x, y * v.y, z * v.z, w * v.w);
+    }
+    Vector4<T> &operator*=(const Vector4<T> &v) {
+        DCHECK(!v.HasNaNs());
+        x *= v.x;
+        y *= v.y;
+        z *= v.z;
+        w *= v.w;
+        return *this;
+    }
+    Vector4<T> operator/(const Vector4<T> &v) const {
+        DCHECK(!v.HasNaNs());
+        return Vector4(x / v.x, y / v.y, z / v.z, w / v.w);
+    }
+    Vector4<T> &operator/=(const Vector4<T> &v) {
+        DCHECK(!v.HasNaNs());
+        x /= v.x;
+        y /= v.y;
+        z /= v.z;
+        w /= v.w;
+        return *this;
+    }
     bool operator==(const Vector4<T> &v) const {
         return x == v.x && y == v.y && z == v.z && w == v.w;
     }
@@ -1000,7 +1024,7 @@ class Ray {
     Ray(const Point3f &o, const Vector3f &d, const Vector4f &wvls, 
         Float tMax = Infinity, Float time = 0.f, 
         const Medium *medium = nullptr)
-        : o(o), d(d), tMax(tMax), time(time), medium(medium) {}
+        : o(o), d(d), wvls(wvls), tMax(tMax), time(time), medium(medium) {}
     Point3f operator()(Float t) const { return o + d * t; }
     bool HasNaNs() const { return (o.HasNaNs() || d.HasNaNs() || isNaN(tMax)); }
     friend std::ostream &operator<<(std::ostream &os, const Ray &r) {
@@ -1356,6 +1380,21 @@ inline Vector3<T> Faceforward(const Vector3<T> &v, const Vector3<T> &v2) {
 template <typename T>
 inline Vector3<T> Faceforward(const Vector3<T> &v, const Normal3<T> &n2) {
     return (Dot(v, n2) < 0.f) ? -v : v;
+}
+
+template <typename T>
+inline Float Sum(const Vector2<T> &v) {
+    return v[0] + v[1]
+}
+
+template <typename T>
+inline Float Sum(const Vector3<T> &v) {
+    return v[0] + v[1] + v[2];
+}
+
+template <typename T>
+inline Float Sum(const Vector4<T> &v) {
+    return v[0] + v[1] + v[2] + v[3];
 }
 
 template <typename T>
