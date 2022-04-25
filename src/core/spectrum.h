@@ -279,6 +279,19 @@ class CoefficientSpectrum {
         DCHECK(i >= 0 && i < nSpectrumSamples);
         return c[i];
     }
+    void setAllBinsButOneTo(Float f, int i) {
+        Float _f = c[i];
+        std::fill(c, c + nSpectrumSamples, f);
+        c[i] = _f;
+    }
+    void zeroAllBinsBut(int i) {
+        setAllBinsButOneTo(0.f, i);
+    }
+    static int indexFromWavelength(const Float wavelength) {
+        int index = (int)((wavelength  - (float)sampledLambdaStart)
+                       * ((float)nSpectrumSamples / (float)sampledLambdaRange));
+        return std::min(index, nSpectrumSamples - 1);
+    }
 
     // CoefficientSpectrum Public Data
     static const int nSamples = nSpectrumSamples;
@@ -517,7 +530,7 @@ inline Float SampleUniformSpectrum(Float sample) {
 }
 
 inline Float PdfUniformSpectrum(Float /* wvl */) {
-    return 1.0 / (Float)sampledLambdaRange;
+    return 1.f / (Float) sampledLambdaRange;
 }
 
 }  // namespace pbrt
