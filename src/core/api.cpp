@@ -57,6 +57,8 @@
 #include "integrators/mlt.h"
 #include "integrators/ao.h"
 #include "integrators/path.h"
+#include "integrators/hero_path.h"
+#include "integrators/hero_path_mis.h"
 #include "integrators/sppm.h"
 #include "integrators/volpath.h"
 #include "integrators/whitted.h"
@@ -70,6 +72,7 @@
 #include "materials/disney.h"
 #include "materials/fourier.h"
 #include "materials/glass.h"
+#include "materials/dispersive_glass.h"
 #include "materials/hair.h"
 #include "materials/kdsubsurface.h"
 #include "materials/matte.h"
@@ -547,6 +550,8 @@ std::shared_ptr<Material> MakeMaterial(const std::string &name,
         material = CreateTranslucentMaterial(mp);
     else if (name == "glass")
         material = CreateGlassMaterial(mp);
+    else if (name == "dispersive_glass")
+        material = CreateDispersiveGlassMaterial(mp);
     else if (name == "mirror")
         material = CreateMirrorMaterial(mp);
     else if (name == "hair")
@@ -1682,6 +1687,10 @@ Integrator *RenderOptions::MakeIntegrator() const {
             CreateDirectLightingIntegrator(IntegratorParams, sampler, camera);
     else if (IntegratorName == "path")
         integrator = CreatePathIntegrator(IntegratorParams, sampler, camera);
+    else if (IntegratorName == "hero_path")
+        integrator = CreateHeroPathIntegrator(IntegratorParams, sampler, camera);
+    else if (IntegratorName == "hero_path_mis")
+        integrator = CreateHeroPathMISIntegrator(IntegratorParams, sampler, camera);
     else if (IntegratorName == "volpath")
         integrator = CreateVolPathIntegrator(IntegratorParams, sampler, camera);
     else if (IntegratorName == "bdpt") {
