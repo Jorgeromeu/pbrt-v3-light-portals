@@ -98,8 +98,7 @@ class SamplerIntegrator : public Integrator {
   protected:
     // SamplerIntegrator Protected Data
     std::shared_ptr<const Camera> camera;
-
-  private:
+    
     // SamplerIntegrator Private Data
     std::shared_ptr<Sampler> sampler;
     const Bounds2i pixelBounds;
