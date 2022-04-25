@@ -50,7 +50,7 @@ namespace pbrt {
 // Interaction Declarations
 struct Interaction {
     // Interaction Public Methods
-    Interaction() : time(0) {}
+    Interaction() : time(0), isWvlDependent(false) {}
     Interaction(const Point3f &p, const Normal3f &n, const Vector3f &pError,
                 const Vector3f &wo, const Vector4f &wvls, Float time,
                 const MediumInterface &mediumInterface)
@@ -59,7 +59,9 @@ struct Interaction {
           pError(pError),
           wo(Normalize(wo)),
           n(n),
-          mediumInterface(mediumInterface) {}
+          wvls(wvls),
+          mediumInterface(mediumInterface),
+          isWvlDependent(false) {}
     bool IsSurfaceInteraction() const { return n != Normal3f(); }
     Ray SpawnRay(const Vector3f &d) const {
         Point3f o = OffsetRayOrigin(p, pError, n, d);
@@ -83,6 +85,7 @@ struct Interaction {
                 const MediumInterface &mediumInterface)
         : p(p), time(time), mediumInterface(mediumInterface) {}
     bool IsMediumInteraction() const { return !IsSurfaceInteraction(); }
+    bool IsWvlDependentInteraction() const { return isWvlDependent; }
     const Medium *GetMedium(const Vector3f &w) const {
         return Dot(w, n) > 0 ? mediumInterface.outside : mediumInterface.inside;
     }
@@ -99,6 +102,7 @@ struct Interaction {
     Vector4f wvls;
     Normal3f n;
     MediumInterface mediumInterface;
+    bool isWvlDependent;
 };
 
 class MediumInteraction : public Interaction {
