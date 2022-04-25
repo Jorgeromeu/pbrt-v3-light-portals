@@ -104,7 +104,7 @@ GlassMaterial *CreateGlassMaterial(const TextureParams &mp) {
         mp.GetFloatTexture("vroughness", 0.f);
     std::shared_ptr<Texture<Float>> bumpMap =
         mp.GetFloatTextureOrNull("bumpmap");
-    bool remapRoughness = mp.FindBool("remaproughness", true);
+    bool remapRoughness = mp.FindBool("remaproughness", false);
     return new GlassMaterial(Kr, Kt, roughu, roughv, eta, bumpMap,
                              remapRoughness);
 }
