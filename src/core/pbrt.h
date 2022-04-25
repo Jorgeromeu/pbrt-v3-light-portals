@@ -130,6 +130,9 @@ class SampledSpectrum;
 #else
   typedef RGBSpectrum Spectrum;
 #endif
+template <int nEntries>
+struct DiscreteDistribution;
+struct SpectralDistribution;
 class Camera;
 struct CameraSample;
 class ProjectiveCamera;
