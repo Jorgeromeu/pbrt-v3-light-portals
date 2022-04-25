@@ -15,7 +15,7 @@ IF (PBRT_FLOAT_AS_DOUBLE)
   ADD_DEFINITIONS ( -D PBRT_FLOAT_AS_DOUBLE )
 ENDIF()
 
-OPTION(PBRT_SAMPLED_SPECTRUM "Use SampledSpectrum rather than RGBSpectrum" OFF)
+OPTION(PBRT_SAMPLED_SPECTRUM "Use SampledSpectrum rather than RGBSpectrum" ON)
 
 IF (PBRT_SAMPLED_SPECTRUM)
   ADD_DEFINITIONS ( -D PBRT_SAMPLED_SPECTRUM )
@@ -442,6 +442,7 @@ SET ( PBRT_CORE_HEADERS
   src/core/scene.h
   src/core/shape.h
   src/core/sobolmatrices.h
+  src/core/distr.h
   src/core/spectrum.h
   src/core/stats.h
   src/core/stringprint.h
