@@ -57,6 +57,7 @@
 #include "integrators/mlt.h"
 #include "integrators/ao.h"
 #include "integrators/path.h"
+#include "integrators/mypath.h"
 #include "integrators/hero_path.h"
 #include "integrators/hero_path_mis.h"
 #include "integrators/sppm.h"
@@ -1687,6 +1688,8 @@ Integrator *RenderOptions::MakeIntegrator() const {
             CreateDirectLightingIntegrator(IntegratorParams, sampler, camera);
     else if (IntegratorName == "path")
         integrator = CreatePathIntegrator(IntegratorParams, sampler, camera);
+    else if (IntegratorName == "mypath")
+        integrator = CreateMyPathIntegrator(IntegratorParams, sampler, camera);
     else if (IntegratorName == "hero_path")
         integrator = CreateHeroPathIntegrator(IntegratorParams, sampler, camera);
     else if (IntegratorName == "hero_path_mis")
