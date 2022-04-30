@@ -768,6 +768,9 @@ std::shared_ptr<AreaLight> MakeAreaLight(const std::string &name,
     if (name == "area" || name == "diffuse")
         area = CreateDiffuseAreaLight(light2world, mediumInterface.outside,
                                       paramSet, shape);
+    else if (name == "portal") {
+        area = CreatePortalLight(light2world, mediumInterface.outside, paramSet, shape);
+    }
     else
         Warning("Area light \"%s\" unknown.", name.c_str());
     paramSet.ReportUnused();

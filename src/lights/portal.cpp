@@ -65,6 +65,16 @@ Spectrum PortalLight::Power() const {
     return (twoSided ? 2 : 1) * Lemit * area * Pi;
 }
 
+/**
+ * Return incident radiance from the light at a point p, and also return the direction vector
+ *
+ * @param ref idk
+ * @param u idk
+ * @param wi modify to be incident direction vector
+ * @param pdf modify to be the PDF of sampling this particular pointc
+ * @param vis idk
+ * @return
+ */
 Spectrum PortalLight::Sample_Li(const Interaction &ref, const Point2f &u,
                                      Vector3f *wi, Float *pdf,
                                      VisibilityTester *vis) const {
@@ -132,7 +142,7 @@ void PortalLight::Pdf_Le(const Ray &ray, const Normal3f &n, Float *pdfPos,
                        : CosineHemispherePdf(Dot(n, ray.d));
 }
 
-std::shared_ptr<AreaLight> CreateDiffuseAreaLight(
+std::shared_ptr<AreaLight> CreatePortalLight(
     const Transform &light2world, const Medium *medium,
     const ParamSet &paramSet, const std::shared_ptr<Shape> &shape) {
     Spectrum L = paramSet.FindOneSpectrum("L", Spectrum(1.0));
