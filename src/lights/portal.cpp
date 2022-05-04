@@ -1,55 +1,35 @@
-
-/*
-    pbrt source code is Copyright(c) 1998-2016
-                        Matt Pharr, Greg Humphreys, and Wenzel Jakob.
-
-    This file is part of pbrt.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are
-    met:
-
-    - Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-
-    - Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
-    IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
-    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-    PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-    HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-    LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-    DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-    THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- */
-
-// lights/diffuse.cpp*
 #include "lights/portal.h"
 #include "paramset.h"
 #include "sampling.h"
 #include "shapes/triangle.h"
 #include "stats.h"
+#include "random"
 
 namespace pbrt {
 
-// DiffuseAreaLight Method Definitions
+// PortalLight Method Definitions
 PortalLight::PortalLight(const Transform &LightToWorld,
-                                   const MediumInterface &mediumInterface,
-                                   const Spectrum &Lemit, int nSamples,
-                                   const std::shared_ptr<Shape> &shape,
-                                   bool twoSided)
+                         const MediumInterface &mediumInterface,
+                         const Spectrum &Lemit, int nSamples,
+                         const std::shared_ptr<Shape> &shape,
+                         const Point3f &x0,
+                         const Point3f &x1,
+                         const Point3f &x2,
+                         const Point3f &x3,
+                         bool twoSided)
     : AreaLight(LightToWorld, mediumInterface, nSamples),
       Lemit(Lemit),
       shape(shape),
       twoSided(twoSided),
+      x0(x0),
+      x1(x1),
+      x2(x2),
+      x3(x3),
       area(shape->Area()) {
+
+    distr_y = std::uniform_real_distribution<float>(x0.y, x1.y);
+    distr_z = std::uniform_real_distribution<float>(x0.z, x3.z);
+
     // Warn if light has transformation with non-uniform scale, though not
     // for Triangles, since this doesn't matter for them.
     if (WorldToLight.HasScale() &&
@@ -65,20 +45,12 @@ Spectrum PortalLight::Power() const {
     return (twoSided ? 2 : 1) * Lemit * area * Pi;
 }
 
-/**
- * Return incident radiance from the light at a point p, and also return the direction vector
- *
- * @param ref idk
- * @param u idk
- * @param wi modify to be incident direction vector
- * @param pdf modify to be the PDF of sampling this particular pointc
- * @param vis idk
- * @return
- */
 Spectrum PortalLight::Sample_Li(const Interaction &ref, const Point2f &u,
-                                     Vector3f *wi, Float *pdf,
-                                     VisibilityTester *vis) const {
+                                Vector3f *wi, Float *pdf,
+                                VisibilityTester *vis) const {
     ProfilePhase _(Prof::LightSample);
+
+    // sample random point on light source
     Interaction pShape = shape->Sample(ref, u, pdf);
     pShape.mediumInterface = mediumInterface;
     if (*pdf == 0 || (pShape.p - ref.p).LengthSquared() == 0) {
@@ -87,18 +59,18 @@ Spectrum PortalLight::Sample_Li(const Interaction &ref, const Point2f &u,
     }
     *wi = Normalize(pShape.p - ref.p);
     *vis = VisibilityTester(ref, pShape);
-    return L(pShape, -*wi);
+     return L(pShape, -*wi);
 }
 
 Float PortalLight::Pdf_Li(const Interaction &ref,
-                               const Vector3f &wi) const {
+                          const Vector3f &wi) const {
     ProfilePhase _(Prof::LightPdf);
     return shape->Pdf(ref, wi);
 }
 
 Spectrum PortalLight::Sample_Le(const Point2f &u1, const Point2f &u2,
-                                     Float time, Ray *ray, Normal3f *nLight,
-                                     Float *pdfPos, Float *pdfDir) const {
+                                Float time, Ray *ray, Normal3f *nLight,
+                                Float *pdfPos, Float *pdfDir) const {
     ProfilePhase _(Prof::LightSample);
     // Sample a point on the area light's _Shape_, _pShape_
     Interaction pShape = shape->Sample(u1, pdfPos);
@@ -133,7 +105,7 @@ Spectrum PortalLight::Sample_Le(const Point2f &u1, const Point2f &u2,
 }
 
 void PortalLight::Pdf_Le(const Ray &ray, const Normal3f &n, Float *pdfPos,
-                              Float *pdfDir) const {
+                         Float *pdfDir) const {
     ProfilePhase _(Prof::LightPdf);
     Interaction it(ray.o, n, Vector3f(), Vector3f(n), ray.wvls, ray.time,
                    mediumInterface);
@@ -143,16 +115,25 @@ void PortalLight::Pdf_Le(const Ray &ray, const Normal3f &n, Float *pdfPos,
 }
 
 std::shared_ptr<AreaLight> CreatePortalLight(
-    const Transform &light2world, const Medium *medium,
-    const ParamSet &paramSet, const std::shared_ptr<Shape> &shape) {
+        const Transform &light2world,
+        const Medium *medium,
+        const ParamSet &paramSet, const std::shared_ptr<Shape> &shape) {
+
     Spectrum L = paramSet.FindOneSpectrum("L", Spectrum(1.0));
     Spectrum sc = paramSet.FindOneSpectrum("scale", Spectrum(1.0));
-    int nSamples = paramSet.FindOneInt("samples",
-                                       paramSet.FindOneInt("nsamples", 1));
+    int nSamples = paramSet.FindOneInt("samples",paramSet.FindOneInt("nsamples", 1));
     bool twoSided = paramSet.FindOneBool("twosided", false);
+
+    // find geometry of portal
+    Point3f x0 = paramSet.FindOnePoint3f("x0", Point3f(0, 0, 0));
+    Point3f x1 = paramSet.FindOnePoint3f("x1", Point3f(0, 0, 0));
+    Point3f x2 = paramSet.FindOnePoint3f("x2", Point3f(0, 0, 0));
+    Point3f x3 = paramSet.FindOnePoint3f("x3", Point3f(0, 0, 0));
+
     if (PbrtOptions.quickRender) nSamples = std::max(1, nSamples / 4);
+
     return std::make_shared<PortalLight>(light2world, medium, L * sc,
-                                              nSamples, shape, twoSided);
+                                         nSamples, shape, x0, x1, x2, x3, twoSided);
 }
 
 }  // namespace pbrt

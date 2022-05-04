@@ -1,10 +1,10 @@
-Film "image" "integer xresolution" [700] "integer yresolution" [700] "string filename" "output00001.exr"
+Film "image" "integer xresolution" [500] "integer yresolution" [500] "string filename" "output00001.exr"
 PixelFilter "box" "float xwidth" [0.5] "float ywidth" [0.5] 
 Accelerator "bvh" 
 "string splitmethod" "sah"
 "integer maxnodeprims" [4]
 Sampler "halton"
-"integer pixelsamples" [25]
+"integer pixelsamples" [250]
 "bool samplepixelcenter" "false"
 Integrator "path"
 "integer maxdepth" [5]
@@ -18,8 +18,8 @@ Camera "perspective"
 WorldBegin
 
 	AttributeBegin
-		Transform [0.000000 0.000000 -1.060224 0.000000 0.000000 1.060224 0.000000 0.000000 1.060224 0.000000 0.000000 0.000000 -6.547679 -0.982184 6.301498 1.000000 ]
-		AreaLightSource "portal" "rgb L" [ 25.0 25.0 25.0 ]
+		Transform [0.000000 0.000000 -5.753833 0.000000 -0.000000 -5.753833 0.000000 0.000000 5.753833 0.000000 0.000000 0.000000 -6.505322 -1.987252 5.031939 1.000000 ]
+		AreaLightSource "diffuse" "rgb L" [ 25.0 25.0 25.0 ]		
 		Shape "trianglemesh"
 		"point P" [
 		-1.0 -1.0 0.0 1.0 -1.0 0.0 1.0 1.0 0.0 -1.0 -1.0 0.0 1.0 1.0 0.0 -1.0 1.0 0.0		
@@ -46,15 +46,6 @@ WorldBegin
 		Material "matte"		
 		"float sigma" [0.0]		
 		"color Kd" [ 0.21927466988563538 0.8000000715255737 0.09317845106124878]		
-		Shape "plymesh" "string filename" ["meshes/00001/Cube_mat0.ply"]
-	AttributeEnd
-	
-
-	AttributeBegin
-		Transform [-5.000000 0.000000 0.000000 0.000000 0.000000 5.000000 0.000000 0.000000 0.000000 0.000000 -5.000000 0.000000 0.000000 -2.000000 5.000000 1.000000 ]
-		Material "matte"		
-		"float sigma" [0.0]		
-		"color Kd" [ 0.8000000715255737 0.14220088720321655 0.11538839340209961]		
 		Shape "trianglemesh"
 		"point P" [
 		-1.0 1.0 1.0 -1.0 1.0 -1.0 -1.0 -2.084914207458496 -1.0 -1.0 1.0 1.0 -1.0 -2.084914207458496 -1.0 -1.0 -2.084914207458496 1.0		
@@ -73,6 +64,15 @@ WorldBegin
 		"integer indices" [
 		0 1 2 3 4 5 
 		]
+	AttributeEnd
+	
+
+	AttributeBegin
+		Transform [-5.000000 0.000000 0.000000 0.000000 0.000000 5.000000 0.000000 0.000000 0.000000 0.000000 -5.000000 0.000000 0.000000 -2.000000 5.000000 1.000000 ]
+		Material "matte"		
+		"float sigma" [0.0]		
+		"color Kd" [ 0.8000000715255737 0.14220088720321655 0.11538839340209961]		
+		Shape "plymesh" "string filename" ["meshes/00001/Cube_mat1.ply"]
 	AttributeEnd
 	
 
