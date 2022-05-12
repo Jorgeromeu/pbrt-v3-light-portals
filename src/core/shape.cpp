@@ -55,6 +55,8 @@ Bounds3f Shape::WorldBound() const { return (*ObjectToWorld)(ObjectBound()); }
 
 Interaction Shape::Sample(const Interaction &ref, const Point2f &u,
                           Float *pdf) const {
+
+    // sample point on shape, and get pdf w.r.t area
     Interaction intr = Sample(u, pdf);
     Vector3f wi = intr.p - ref.p;
     if (wi.LengthSquared() == 0)

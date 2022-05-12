@@ -106,58 +106,30 @@ Spectrum UniformSampleOneLight(const Interaction &it, const Scene &scene,
                           scene, sampler, arena, handleMedia) / lightPdf;
 }
 
-Spectrum SampleLightThroughPortal(const Light& light,
-                                  const Point2f uLight,
-                                  const Interaction &it,
-                                  const Scene &scene,
-                                  Vector3f *wi,
-                                  Float *pdf,
-                                  VisibilityTester *vis) {
+Point3f SamplePortal(const Interaction &it,
+                     const Point2f &uPortal,
+                     Vector3f *wi,
+                     Float *pdf) {
 
+    float loY = -3.651;
+    float hiY = -0.27;
+    float loZ = 3.33;
+    float hiZ = 6.67;
+    Vector3f portalNormal = Vector3f(1, 0, 0);
 
-    float lo_y = -3.651;
-    float hi_y = -0.27;
-    float lo_z = 3.33;
-    float hi_z = 6.67;
-
-    float rand_x = -5;
-    float rand_y = lo_y + uLight.x * (hi_y - lo_y);
-    float rand_z = lo_z + uLight.y * (hi_z - lo_z);
+    float randX = -5;
+    float randY = loY + uPortal.x * (hiY - loY);
+    float randZ = loZ + uPortal.y * (hiZ - loZ);
 
     // portal uniformly
-    Point3f sampled_point = Point3f(rand_x, rand_y, rand_z);
+    Point3f sampledPoint = Point3f(randX, randY, randZ);
 
-    // portal center
-    //Point3f sampled_point = Point3f(-5, -1.95, 5.8);
 
-    // direction from it to sampled point
-    Vector3f dir = Normalize(sampled_point - it.p);
+    *wi = Normalize(sampledPoint - it.p);
+    *pdf = 1 / ((hiY - loY) * (hiZ - loZ));
+    *pdf *= DistanceSquared(it.p, sampledPoint) / AbsDot(portalNormal, -*wi);
 
-    // cast ray towards sampled point on portal
-    Ray ray;
-    ray.o = it.p;
-    ray.d = dir;
-    SurfaceInteraction isect;
-    bool is_hit = scene.Intersect(ray, &isect);
-
-    if (!is_hit) {
-        return 0.0f;
-    }
-
-    // didn't hit light after going through portal
-    if (isect.Le(-dir) == 0) {
-        return 0.f;
-    }
-
-    std::cout << isect.p << std::endl;
-
-    *wi = dir;
-    *pdf = 0.0965051;
-    *pdf *= DistanceSquared(it.p, isect.p) / AbsDot(isect.n, -dir);
-
-    *vis = VisibilityTester(it, isect);
-
-    return isect.Le(-dir);
+    return sampledPoint;
 }
 
 /**
@@ -187,11 +159,8 @@ Spectrum EstimateDirect(const Interaction &it, const Point2f &uScattering,
     Float lightPdf = 0, scatteringPdf = 0;
     VisibilityTester visibility;
 
-
     Spectrum Li;
     Li = light.Sample_Li(it, uLight, &wi, &lightPdf, &visibility);
-    // Li = SampleLightThroughPortal(light, uLight, it, scene, &wi, &lightPdf, &visibility);
-
 
     VLOG(2) << "EstimateDirect uLight:" << uLight << " -> Li: " << Li << ", wi: "
             << wi << ", pdf: " << lightPdf;
@@ -299,8 +268,113 @@ Spectrum EstimateDirect(const Interaction &it, const Point2f &uScattering,
     return Ld;
 }
 
-std::unique_ptr<Distribution1D> ComputeLightPowerDistribution(
-    const Scene &scene) {
+Spectrum EstimateDirectPortal(const Interaction &it, const Point2f &uScattering,
+                              const Light &light, const Point2f &uLight,
+                              const Scene &scene, Sampler &sampler,
+                              MemoryArena &arena, bool handleMedia, bool specular) {
+
+    BxDFType bsdfFlags = specular ? BSDF_ALL : BxDFType(BSDF_ALL & ~BSDF_SPECULAR);
+
+    // Sample portal
+    Vector3f wi;
+    Float pdf = 0;
+    SamplePortal(it, uLight, &wi, &pdf);
+
+    if (pdf == 0) return 0;
+
+    Spectrum L(0.f);
+
+    // Cast ray towards sampled point on portal and get direct illumination
+    Ray ray;
+    SurfaceInteraction lightIsect;
+    ray = it.SpawnRay(wi);
+    bool is_hit = scene.Intersect(ray, &lightIsect);
+
+    if (!is_hit) return 0;
+
+    L = lightIsect.Le(-wi);
+
+    if (L.IsBlack()) return 0;
+
+
+    // compute BSDF for sampled direction
+    Spectrum f;
+    const auto &isect = (const SurfaceInteraction&) it;
+    f = isect.bsdf->f(isect.wo, wi, bsdfFlags) * AbsDot(wi, isect.shading.n);
+
+    return L * f / pdf;
+}
+
+Spectrum EstimateDirectPortalMIS(const Interaction &it, const Point2f &uScattering,
+                                 const Light &light, const Point2f &uLight,
+                                 const Scene &scene, Sampler &sampler,
+                                 MemoryArena &arena, bool handleMedia, bool specular) {
+
+    // reused variables
+    BxDFType bsdfFlags = specular ? BSDF_ALL : BxDFType(BSDF_ALL & ~BSDF_SPECULAR);
+    Vector3f wi;
+    Float portalPdf = 0;
+    SurfaceInteraction lightIsect;
+    Ray ray;
+    Spectrum Li(0.0f);
+    Spectrum Ld(0.0f);
+
+    // Sample direction from portal with MIS
+    Point3f sampledPoint = SamplePortal(it, uLight, &wi, &portalPdf);
+
+    if (portalPdf <= 0) return 0;
+
+    // Cast ray towards sampled point on portal and get direct illumination
+    ray = it.SpawnRay(wi);
+    bool is_hit = scene.Intersect(ray, &lightIsect);
+
+    if (!is_hit) return 0;
+    // adjust portalPdf
+    portalPdf *= DistanceSquared(it.p, sampledPoint) / AbsDot(lightIsect.n, -wi);
+
+    Li = lightIsect.Le(-wi);
+
+    if (Li.IsBlack()) return 0;
+
+    // compute BSDF for sampled direction
+    Spectrum f;
+    const auto &isect = (const SurfaceInteraction&) it;
+    f = isect.bsdf->f(isect.wo, wi, bsdfFlags) * AbsDot(wi, isect.shading.n);
+    Float scatteringPdf = isect.bsdf->Pdf(isect.wo, wi, bsdfFlags);
+
+    Float weight = PowerHeuristic(1, portalPdf, 1, scatteringPdf);
+    Ld += f * Li * weight / portalPdf;
+
+    // Sample BSDF with MIS
+//    BxDFType sampledType;
+//    f = isect.bsdf->Sample_f(isect.wo, &wi, uScattering, &scatteringPdf,
+//                             bsdfFlags, &sampledType);
+//
+//    if (f.IsBlack()) return Ld;
+//    f *= AbsDot(wi, isect.shading.n);
+//
+//    // check radiance along new sampled wi
+//    ray = it.SpawnRay(wi);
+//    is_hit = scene.Intersect(ray, &lightIsect);
+//
+//    if (!is_hit) return Ld;
+//
+//    if (!f.IsBlack() && scatteringPdf > 0) {
+//
+//        // TODO figure out
+//        portalPdf = light.Pdf_Li(it, wi);
+//        portalPdf *= DistanceSquared(it.p, lightIsect.p) / AbsDot(lightIsect.n, -wi);
+//        weight = PowerHeuristic(1, scatteringPdf, 1, portalPdf);
+//        Ld += f * Li * weight / scatteringPdf;
+//    }
+
+
+    return Ld;
+}
+
+
+
+std::unique_ptr<Distribution1D> ComputeLightPowerDistribution(const Scene &scene) {
     if (scene.lights.empty()) return nullptr;
     std::vector<Float> lightPower;
     for (const auto &light : scene.lights)

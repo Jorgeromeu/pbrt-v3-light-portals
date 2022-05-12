@@ -74,6 +74,19 @@ Spectrum EstimateDirect(const Interaction &it, const Point2f &uShading,
                         const Scene &scene, Sampler &sampler,
                         MemoryArena &arena, bool handleMedia = false,
                         bool specular = false);
+
+Spectrum EstimateDirectPortal(const Interaction &it, const Point2f &uShading,
+                        const Light &light, const Point2f &uLight,
+                        const Scene &scene, Sampler &sampler,
+                        MemoryArena &arena, bool handleMedia = false,
+                        bool specular = false);
+
+Spectrum EstimateDirectPortalMIS(const Interaction &it, const Point2f &uShading,
+                                  const Light &light, const Point2f &uLight,
+                                  const Scene &scene, Sampler &sampler,
+                                  MemoryArena &arena, bool handleMedia = false,
+                                  bool specular = false);
+
 std::unique_ptr<Distribution1D> ComputeLightPowerDistribution(
     const Scene &scene);
 

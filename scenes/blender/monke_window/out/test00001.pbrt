@@ -1,4 +1,4 @@
-Film "image" "integer xresolution" [500] "integer yresolution" [500] "string filename" "output00001.exr"
+Film "image" "integer xresolution" [300] "integer yresolution" [300] "string filename" "output00001.exr"
 PixelFilter "box" "float xwidth" [0.5] "float ywidth" [0.5] 
 Accelerator "bvh" 
 "string splitmethod" "sah"
@@ -19,7 +19,7 @@ WorldBegin
 
 	AttributeBegin
 		Transform [0.000000 0.000000 -5.753833 0.000000 -0.000000 -5.753833 0.000000 0.000000 5.753833 0.000000 0.000000 0.000000 -6.505322 -1.987252 5.031939 1.000000 ]
-		AreaLightSource "diffuse" "rgb L" [ 25.0 25.0 25.0 ]		
+		AreaLightSource "diffuse" "rgb L" [ 10.0 10.0 10.0 ]		
 		Shape "trianglemesh"
 		"point P" [
 		-1.0 -1.0 0.0 1.0 -1.0 0.0 1.0 1.0 0.0 -1.0 -1.0 0.0 1.0 1.0 0.0 -1.0 1.0 0.0		
