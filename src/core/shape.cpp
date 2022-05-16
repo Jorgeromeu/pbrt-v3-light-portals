@@ -58,6 +58,8 @@ Interaction Shape::Sample(const Interaction &ref, const Point2f &u,
 
     // sample point on shape, and get pdf w.r.t area
     Interaction intr = Sample(u, pdf);
+
+    // get the direction
     Vector3f wi = intr.p - ref.p;
     if (wi.LengthSquared() == 0)
         *pdf = 0;

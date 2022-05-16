@@ -4,9 +4,9 @@ Accelerator "bvh"
 "string splitmethod" "sah"
 "integer maxnodeprims" [4]
 Sampler "halton"
-"integer pixelsamples" [250]
+"integer pixelsamples" [25]
 "bool samplepixelcenter" "false"
-Integrator "path"
+Integrator "directlighting" "string strategy" "one"
 "integer maxdepth" [5]
 Scale -1 1 1 #avoid the 'flipped image' bug..
 LookAt	0.0 -10.0 5.0
@@ -18,7 +18,7 @@ Camera "perspective"
 WorldBegin
 
 	AttributeBegin
-		Transform [0.000000 0.000000 -5.753833 0.000000 -0.000000 -5.753833 0.000000 0.000000 5.753833 0.000000 0.000000 0.000000 -6.505322 -1.987252 5.031939 1.000000 ]
+		Transform [0.000000 0.000000 -7.185309 0.000000 -0.000000 -7.185309 0.000000 0.000000 7.185309 0.000000 0.000000 0.000000 -6.505322 -1.987252 5.031939 1.000000 ]
 		AreaLightSource "diffuse" "rgb L" [ 10.0 10.0 10.0 ]		
 		Shape "trianglemesh"
 		"point P" [

@@ -102,7 +102,7 @@ Spectrum UniformSampleOneLight(const Interaction &it, const Scene &scene,
     const std::shared_ptr<Light> &light = scene.lights[lightNum];
     Point2f uLight = sampler.Get2D();
     Point2f uScattering = sampler.Get2D();
-    return EstimateDirect(it, uScattering, *light, uLight,
+    return EstimateDirectPortal(it, uScattering, *light, uLight,
                           scene, sampler, arena, handleMedia) / lightPdf;
 }
 
@@ -111,23 +111,23 @@ Point3f SamplePortal(const Interaction &it,
                      Vector3f *wi,
                      Float *pdf) {
 
-    float loY = -3.651;
-    float hiY = -0.27;
-    float loZ = 3.33;
-    float hiZ = 6.67;
+    float loY = -3.650184154510498;
+    float hiY = -0.280983567237854;
+    float loZ = 3.3333334922790527;
+    float hiZ = 6.666666507720947;
+    float portalArea = (hiY - loY) * (hiZ - loZ);
+    portalArea /= 2;
     Vector3f portalNormal = Vector3f(1, 0, 0);
 
-    float randX = -5;
+    float randX = -5.000000476837158;
     float randY = loY + uPortal.x * (hiY - loY);
     float randZ = loZ + uPortal.y * (hiZ - loZ);
 
     // portal uniformly
     Point3f sampledPoint = Point3f(randX, randY, randZ);
 
-
     *wi = Normalize(sampledPoint - it.p);
-    *pdf = 1 / ((hiY - loY) * (hiZ - loZ));
-    *pdf *= DistanceSquared(it.p, sampledPoint) / AbsDot(portalNormal, -*wi);
+    *pdf = DistanceSquared(it.p, sampledPoint) / (AbsDot(portalNormal, -*wi) * portalArea);
 
     return sampledPoint;
 }
@@ -275,34 +275,37 @@ Spectrum EstimateDirectPortal(const Interaction &it, const Point2f &uScattering,
 
     BxDFType bsdfFlags = specular ? BSDF_ALL : BxDFType(BSDF_ALL & ~BSDF_SPECULAR);
 
-    // Sample portal
+    // Sample direction from portal
+
+    // wi: direction from p to p'
     Vector3f wi;
     Float pdf = 0;
-    SamplePortal(it, uLight, &wi, &pdf);
+    Point3f sampledPoint = SamplePortal(it, uLight, &wi, &pdf);
 
     if (pdf == 0) return 0;
-
-    Spectrum L(0.f);
 
     // Cast ray towards sampled point on portal and get direct illumination
     Ray ray;
     SurfaceInteraction lightIsect;
     ray = it.SpawnRay(wi);
-    bool is_hit = scene.Intersect(ray, &lightIsect);
+    if (!scene.Intersect(ray, &lightIsect)) {
+        return 0;
+    }
 
-    if (!is_hit) return 0;
-
-    L = lightIsect.Le(-wi);
+    // get direct light from point on light source towards p
+    Spectrum L = lightIsect.Le(-wi);
 
     if (L.IsBlack()) return 0;
-
 
     // compute BSDF for sampled direction
     Spectrum f;
     const auto &isect = (const SurfaceInteraction&) it;
-    f = isect.bsdf->f(isect.wo, wi, bsdfFlags) * AbsDot(wi, isect.shading.n);
+    f = isect.bsdf->f(isect.wo, wi, bsdfFlags);
 
-    return L * f / pdf;
+    // geometry term, for lambert's law,
+    float g = AbsDot(wi, isect.shading.n);
+
+    return (L * f * g) / pdf;
 }
 
 Spectrum EstimateDirectPortalMIS(const Interaction &it, const Point2f &uScattering,
