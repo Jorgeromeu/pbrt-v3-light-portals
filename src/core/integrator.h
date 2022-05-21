@@ -75,17 +75,35 @@ Spectrum EstimateDirect(const Interaction &it, const Point2f &uShading,
                         MemoryArena &arena, bool handleMedia = false,
                         bool specular = false);
 
+Spectrum Debug(const Interaction &it, const Point2f &uShading,
+               Light &light, const Point2f &uLight,
+               const Scene &scene, Sampler &sampler,
+               MemoryArena &arena, bool handleMedia = false,
+               bool specular = false);
+
 Spectrum EstimateDirectPortal(const Interaction &it, const Point2f &uShading,
-                        const Light &light, const Point2f &uLight,
+                        Light &light, const Point2f &uLight,
                         const Scene &scene, Sampler &sampler,
                         MemoryArena &arena, bool handleMedia = false,
                         bool specular = false);
 
-Spectrum EstimateDirectPortalMIS(const Interaction &it, const Point2f &uShading,
-                                  const Light &light, const Point2f &uLight,
-                                  const Scene &scene, Sampler &sampler,
-                                  MemoryArena &arena, bool handleMedia = false,
-                                  bool specular = false);
+Spectrum EstimateDirectProduct(const Interaction &it, const Point2f &uShading,
+                              Light &light, const Point2f &uLight,
+                              const Scene &scene, Sampler &sampler,
+                              MemoryArena &arena, bool handleMedia = false,
+                              bool specular = false);
+
+Spectrum EstimateDirectMIS2(const Interaction &it, const Point2f &uShading,
+                            Light &light, const Point2f &uLight,
+                            const Scene &scene, Sampler &sampler,
+                            MemoryArena &arena, bool handleMedia = false,
+                            bool specular = false);
+
+Spectrum EstimateDirectMIS3(const Interaction &it, const Point2f &uShading,
+                            Light &light, const Point2f &uLight,
+                            const Scene &scene, Sampler &sampler,
+                            MemoryArena &arena, bool handleMedia = false,
+                            bool specular = false);
 
 std::unique_ptr<Distribution1D> ComputeLightPowerDistribution(
     const Scene &scene);

@@ -1431,7 +1431,7 @@ void pbrtShape(const std::string &name, const ParamSet &params) {
 }
 
 void pbrtPortal(const std::string &name, const ParamSet &params) {
-        VERIFY_WORLD("Portal");
+        VERIFY_WORLD("PortalLightSource");
         std::vector<std::shared_ptr<Primitive>> prims;
         std::vector<std::shared_ptr<AreaLight>> areaLights;
         if (PbrtOptions.cat || (PbrtOptions.toPly && name != "trianglemesh")) {

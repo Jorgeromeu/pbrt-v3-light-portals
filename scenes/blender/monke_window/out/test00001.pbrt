@@ -4,9 +4,9 @@ Accelerator "bvh"
 "string splitmethod" "sah"
 "integer maxnodeprims" [4]
 Sampler "halton"
-"integer pixelsamples" [25]
+"integer pixelsamples" [40]
 "bool samplepixelcenter" "false"
-Integrator "directlighting" "string strategy" "one"
+Integrator "path"
 "integer maxdepth" [5]
 Scale -1 1 1 #avoid the 'flipped image' bug..
 LookAt	0.0 -10.0 5.0
@@ -19,7 +19,13 @@ WorldBegin
 
 	AttributeBegin
 		Transform [0.000000 0.000000 -7.185309 0.000000 -0.000000 -7.185309 0.000000 0.000000 7.185309 0.000000 0.000000 0.000000 -6.505322 -1.987252 5.031939 1.000000 ]
-		AreaLightSource "diffuse" "rgb L" [ 10.0 10.0 10.0 ]		
+		AreaLightSource "portal" "rgb L" [ 10.0 10.0 10.0 ]
+		"float loY" -3.650184154510498
+        "float hiY" -0.280983567237854
+        "float loZ" 3.3333334922790527
+        "float hiZ" 6.666666507720947
+        "float portalX" -5
+        "vector3 portalNormal" [1, 0, 0]
 		Shape "trianglemesh"
 		"point P" [
 		-1.0 -1.0 0.0 1.0 -1.0 0.0 1.0 1.0 0.0 -1.0 -1.0 0.0 1.0 1.0 0.0 -1.0 1.0 0.0		

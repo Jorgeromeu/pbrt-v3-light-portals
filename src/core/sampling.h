@@ -173,6 +173,11 @@ inline Float PowerHeuristic(int nf, Float fPdf, int ng, Float gPdf) {
     return (f * f) / (f * f + g * g);
 }
 
+inline Float PowerHeuristic3(int na, Float aPdf, int nb, Float bPdf, Float nc, Float cPdf) {
+    Float a = na * aPdf, b = nb * bPdf, c = nc * cPdf;
+    return (a * a) / (a * a + b * b + c * c);
+}
+
 }  // namespace pbrt
 
 #endif  // PBRT_CORE_SAMPLING_H
