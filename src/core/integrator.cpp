@@ -115,7 +115,7 @@ Spectrum UniformSampleOneLight(const Interaction &it, const Scene &scene,
     const std::shared_ptr<Light> &light = scene.lights[lightNum];
     Point2f uLight = sampler.Get2D();
     Point2f uScattering = sampler.Get2D();
-    return Debug(it, uScattering, *light, uLight,
+    return EstimateDirectMIS2(it, uScattering, *light, uLight,
                           scene, sampler, arena, handleMedia) / lightPdf;
 }
 
