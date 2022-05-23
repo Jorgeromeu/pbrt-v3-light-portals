@@ -1,0 +1,82 @@
+Film "image" "integer xresolution" [700] "integer yresolution" [700] "string filename" "caustic00001.exr"
+PixelFilter "box" "float xwidth" [0.5] "float ywidth" [0.5] 
+Accelerator "bvh" 
+"string splitmethod" "sah"
+"integer maxnodeprims" [4]
+Sampler "halton"
+"integer pixelsamples" [25]
+"bool samplepixelcenter" "false"
+Integrator "sppm"
+"integer imagewritefrequency" [1]
+"integer iterations" [255]
+"float radius" [0.0005]
+"integer maxdepth" [10]
+Scale -1 1 1 #avoid the 'flipped image' bug..
+LookAt	3.8701841831207275 -3.5051379203796387 4.048406600952148
+	3.249692440032959 -2.944322347640991 3.5002498626708984
+	-0.4066677987575531 0.3675556182861328 0.8363755941390991
+
+Camera "perspective"
+"float fov" [39.597755335771296]
+WorldBegin
+
+	AttributeBegin
+		Transform [8.234847 0.000000 0.000000 0.000000 0.000000 8.234847 0.000000 0.000000 0.000000 0.000000 8.234847 0.000000 -5.247415 5.033837 0.000000 1.000000 ]
+		Shape "trianglemesh"
+		"point P" [
+		-1.0 -1.0 0.0 1.0 -1.0 0.0 1.0 1.0 0.0 -1.0 -1.0 0.0 1.0 1.0 0.0 -1.0 1.0 0.0		
+		]
+		"normal N" [
+		0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0		
+		]
+		"float st" [
+		0.0 0.0 
+		1.0 0.0 
+		1.0 1.0 
+		0.0 0.0 
+		1.0 1.0 
+		0.0 1.0 
+		]
+		"integer indices" [
+		0 1 2 3 4 5 
+		]
+	AttributeEnd
+	
+
+	AttributeBegin
+		Transform [1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.889822 1.000000 ]
+		Material "glass"		
+		"color Kr" [ 0.800000011920929 0.800000011920929 0.800000011920929]		
+		"color Kt" [ 0.800000011920929 0.800000011920929 0.800000011920929]		
+		"float uroughness" [0.0]		
+		"float vroughness" [0.0]		
+		"float index" [1.399999976158142]		
+		Shape "plymesh" "string filename" ["meshes/00001/Sphere_mat0.ply"]
+	AttributeEnd
+	
+
+	AttributeBegin
+		Transform [1.000000 0.000000 0.000000 0.000000 0.000000 -1.000000 -0.000000 0.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 -2.526953 3.454702 1.000000 ]
+		AreaLightSource "diffuse" "rgb L" [ 10.0 10.0 10.0 ]		
+		Shape "trianglemesh"
+		"point P" [
+		-1.0 -1.0 0.0 1.0 -1.0 0.0 1.0 1.0 0.0 -1.0 -1.0 0.0 1.0 1.0 0.0 -1.0 1.0 0.0		
+		]
+		"normal N" [
+		0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0		
+		]
+		"float st" [
+		0.0 0.0 
+		1.0 0.0 
+		1.0 1.0 
+		0.0 0.0 
+		1.0 1.0 
+		0.0 1.0 
+		]
+		"integer indices" [
+		0 1 2 3 4 5 
+		]
+	AttributeEnd
+	
+
+WorldEnd

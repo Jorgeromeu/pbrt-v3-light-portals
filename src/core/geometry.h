@@ -1384,7 +1384,7 @@ inline Vector3<T> Faceforward(const Vector3<T> &v, const Normal3<T> &n2) {
 
 template <typename T>
 inline Float Sum(const Vector2<T> &v) {
-    return v[0] + v[1]
+    return v[0] + v[1];
 }
 
 template <typename T>

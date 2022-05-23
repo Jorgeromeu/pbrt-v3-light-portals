@@ -69,6 +69,8 @@ Spectrum DiffuseAreaLight::Sample_Li(const Interaction &ref, const Point2f &u,
                                      Vector3f *wi, Float *pdf,
                                      VisibilityTester *vis) const {
     ProfilePhase _(Prof::LightSample);
+
+    // pdf is set here
     Interaction pShape = shape->Sample(ref, u, pdf);
     pShape.mediumInterface = mediumInterface;
     if (*pdf == 0 || (pShape.p - ref.p).LengthSquared() == 0) {
@@ -131,6 +133,7 @@ void DiffuseAreaLight::Pdf_Le(const Ray &ray, const Normal3f &n, Float *pdfPos,
     *pdfDir = twoSided ? (.5 * CosineHemispherePdf(AbsDot(n, ray.d)))
                        : CosineHemispherePdf(Dot(n, ray.d));
 }
+
 
 std::shared_ptr<AreaLight> CreateDiffuseAreaLight(
     const Transform &light2world, const Medium *medium,

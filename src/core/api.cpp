@@ -57,12 +57,14 @@
 #include "integrators/mlt.h"
 #include "integrators/ao.h"
 #include "integrators/path.h"
+#include "integrators/mypath.h"
 #include "integrators/hero_path.h"
 #include "integrators/hero_path_mis.h"
 #include "integrators/sppm.h"
 #include "integrators/volpath.h"
 #include "integrators/whitted.h"
 #include "lights/diffuse.h"
+#include "lights/portal.h"
 #include "lights/distant.h"
 #include "lights/goniometric.h"
 #include "lights/infinite.h"
@@ -766,11 +768,15 @@ std::shared_ptr<AreaLight> MakeAreaLight(const std::string &name,
     if (name == "area" || name == "diffuse")
         area = CreateDiffuseAreaLight(light2world, mediumInterface.outside,
                                       paramSet, shape);
+    else if (name == "portal") {
+        area = CreatePortalLight(light2world, mediumInterface.outside, paramSet, shape);
+    }
     else
         Warning("Area light \"%s\" unknown.", name.c_str());
     paramSet.ReportUnused();
     return area;
 }
+
 
 std::shared_ptr<Primitive> MakeAccelerator(
     const std::string &name,
@@ -1424,7 +1430,99 @@ void pbrtShape(const std::string &name, const ParamSet &params) {
     }
 }
 
-// Attempt to determine if the ParamSet for a shape may provide a value for
+void pbrtPortal(const std::string &name, const ParamSet &params) {
+        VERIFY_WORLD("PortalLightSource");
+        std::vector<std::shared_ptr<Primitive>> prims;
+        std::vector<std::shared_ptr<AreaLight>> areaLights;
+        if (PbrtOptions.cat || (PbrtOptions.toPly && name != "trianglemesh")) {
+            printf("%*sShape \"%s\" ", catIndentCount, "", name.c_str());
+            params.Print(catIndentCount);
+            printf("\n");
+        }
+
+        if (!curTransform.IsAnimated()) {
+            // Initialize _prims_ and _areaLights_ for static shape
+
+            // Create shapes for shape _name_
+            Transform *ObjToWorld = transformCache.Lookup(curTransform[0]);
+            Transform *WorldToObj = transformCache.Lookup(Inverse(curTransform[0]));
+            std::vector<std::shared_ptr<Shape>> shapes =
+                    MakeShapes(name, ObjToWorld, WorldToObj,
+                               graphicsState.reverseOrientation, params);
+            if (shapes.empty()) return;
+            std::shared_ptr<Material> mtl = graphicsState.GetMaterialForShape(params);
+            params.ReportUnused();
+            MediumInterface mi = graphicsState.CreateMediumInterface();
+            prims.reserve(shapes.size());
+            for (auto s : shapes) {
+                // Possibly create area light for shape
+                std::shared_ptr<AreaLight> area;
+                if (graphicsState.areaLight != "") {
+                    area = MakeAreaLight(graphicsState.areaLight, curTransform[0],
+                                         mi, graphicsState.areaLightParams, s);
+                    if (area) areaLights.push_back(area);
+                }
+                prims.push_back(
+                        std::make_shared<GeometricPrimitive>(s, mtl, area, mi));
+            }
+        } else {
+            // Initialize _prims_ and _areaLights_ for animated shape
+
+            // Create initial shape or shapes for animated shape
+            if (graphicsState.areaLight != "")
+                Warning(
+                        "Ignoring currently set area light when creating "
+                        "animated shape");
+            Transform *identity = transformCache.Lookup(Transform());
+            std::vector<std::shared_ptr<Shape>> shapes = MakeShapes(
+                    name, identity, identity, graphicsState.reverseOrientation, params);
+            if (shapes.empty()) return;
+
+            // Create _GeometricPrimitive_(s) for animated shape
+            std::shared_ptr<Material> mtl = graphicsState.GetMaterialForShape(params);
+            params.ReportUnused();
+            MediumInterface mi = graphicsState.CreateMediumInterface();
+            prims.reserve(shapes.size());
+            for (auto s : shapes)
+                prims.push_back(
+                        std::make_shared<GeometricPrimitive>(s, mtl, nullptr, mi));
+
+            // Create single _TransformedPrimitive_ for _prims_
+
+            // Get _animatedObjectToWorld_ transform for shape
+            static_assert(MaxTransforms == 2,
+                          "TransformCache assumes only two transforms");
+            Transform *ObjToWorld[2] = {
+                    transformCache.Lookup(curTransform[0]),
+                    transformCache.Lookup(curTransform[1])
+            };
+            AnimatedTransform animatedObjectToWorld(
+                    ObjToWorld[0], renderOptions->transformStartTime, ObjToWorld[1],
+                    renderOptions->transformEndTime);
+            if (prims.size() > 1) {
+                std::shared_ptr<Primitive> bvh = std::make_shared<BVHAccel>(prims);
+                prims.clear();
+                prims.push_back(bvh);
+            }
+            prims[0] = std::make_shared<TransformedPrimitive>(
+                    prims[0], animatedObjectToWorld);
+        }
+        // Add _prims_ and _areaLights_ to scene or current instance
+        if (renderOptions->currentInstance) {
+            if (areaLights.size())
+                Warning("Area lights not supported with object instancing");
+            renderOptions->currentInstance->insert(
+                    renderOptions->currentInstance->end(), prims.begin(), prims.end());
+        } else {
+            renderOptions->primitives.insert(renderOptions->primitives.end(),
+                                             prims.begin(), prims.end());
+            if (areaLights.size())
+                renderOptions->lights.insert(renderOptions->lights.end(),
+                                             areaLights.begin(), areaLights.end());
+        }
+    }
+
+    // Attempt to determine if the ParamSet for a shape may provide a value for
 // its material's parameters. Unfortunately, materials don't provide an
 // explicit representation of their parameters that we can query and
 // cross-reference with the parameter values available from the shape.
@@ -1687,6 +1785,8 @@ Integrator *RenderOptions::MakeIntegrator() const {
             CreateDirectLightingIntegrator(IntegratorParams, sampler, camera);
     else if (IntegratorName == "path")
         integrator = CreatePathIntegrator(IntegratorParams, sampler, camera);
+    else if (IntegratorName == "mypath")
+        integrator = CreateMyPathIntegrator(IntegratorParams, sampler, camera);
     else if (IntegratorName == "hero_path")
         integrator = CreateHeroPathIntegrator(IntegratorParams, sampler, camera);
     else if (IntegratorName == "hero_path_mis")

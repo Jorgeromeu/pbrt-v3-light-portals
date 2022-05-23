@@ -65,6 +65,19 @@ class Light {
     virtual ~Light();
     Light(int flags, const Transform &LightToWorld,
           const MediumInterface &mediumInterface, int nSamples = 1);
+
+   /**
+    * Return incident radiance from the light, at a sampled position, to the point
+    * given by ref, in the case that the light is not occluded.
+    *
+    * @param ref point to measure light to
+    * @param u random 2D point for sampling purposes
+    * @param wi modify to be incident direction vector from sampled point to p
+    * @param pdf modify to be the PDF of sampling this particular point on the light
+    * @param vis visibility tester, used to test for occlusion later down the line
+    *
+    * @return Incident radiance from the light at a sampled position
+    */
     virtual Spectrum Sample_Li(const Interaction &ref, const Point2f &u,
                                Vector3f *wi, Float *pdf,
                                VisibilityTester *vis) const = 0;
