@@ -1,10 +1,10 @@
-Film "image" "integer xresolution" [10] "integer yresolution" [10] "string filename" "output00001.exr"
+Film "image" "integer xresolution" [500] "integer yresolution" [500] "string filename" "output00001.exr"
 PixelFilter "box" "float xwidth" [0.5] "float ywidth" [0.5] 
 Accelerator "bvh" 
 "string splitmethod" "sah"
 "integer maxnodeprims" [4]
 Sampler "halton"
-"integer pixelsamples" [25]
+"integer pixelsamples" [10]
 "bool samplepixelcenter" "false"
 Integrator "directlighting" "string strategy" "one"
 "integer maxdepth" [3]
@@ -142,7 +142,7 @@ WorldBegin
         "float loZ" -2.48432
         "float hiZ" -1.51568
         "float portalX" 2.79644
-        "vector3 portalNormal" [0, 0, -1]
+        "normal portalNormal" [0, 0, -1]
 		Shape "trianglemesh"
 		"point P" [
 		2.2052745819091797 -2.205274820327759 -2.9802322387695312e-08 2.2052745819091797 2.205274820327759 -2.9802322387695312e-08 -2.2052745819091797 2.205274820327759 -2.9802322387695312e-08 2.2052745819091797 -2.205274820327759 -2.9802322387695312e-08 -2.2052745819091797 2.205274820327759 -2.9802322387695312e-08 -2.2052745819091797 -2.205274820327759 8.940696716308594e-08		

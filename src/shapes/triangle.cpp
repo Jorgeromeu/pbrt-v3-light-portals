@@ -38,6 +38,7 @@
 #include "sampling.h"
 #include "efloat.h"
 #include "ext/rply.h"
+#include "portal.h"
 #include <array>
 
 namespace pbrt {
@@ -642,6 +643,203 @@ Float Triangle::SolidAngle(const Point3f &p, int nSamples) const {
         std::acos(Clamp(Dot(cross01, -cross12), -1, 1)) +
         std::acos(Clamp(Dot(cross12, -cross20), -1, 1)) +
         std::acos(Clamp(Dot(cross20, -cross01), -1, 1)) - Pi);
+}
+
+Point3f ProjectZ(const Point3f& ref, const Point3f& vertex, Float z) {
+    Vector3f dir = Normalize(vertex - ref);
+    Float t = (z - ref.z) / dir.z;
+    return ref + t * dir;
+}
+
+Point3f ProjectAA(const Point3f& ref, const Point3f& v, Float z, int axis) {
+    Vector3f dir = Normalize(v - ref);
+    Float t = (z - ref[axis]) / dir[axis];
+    return ref + t * dir;
+}
+
+/**
+ * Clip a triangle to an axis-aligned line
+
+ * @param v0 vertex 0
+ * @param v1 vertex 1
+ * @param v2 vertex 2
+ * @param u random value for fast clipping
+ * @param axis axis of clip line (0=x, 1=y, 2=z)
+ * @param greater true: clip points greater than boundary, false: clip points smaller than boundary
+
+ * @return false if triangle is fully outside of area
+ */
+inline bool FastClipAA(Point3f& v0, Point3f& v1, Point3f& v2,
+                       Float u,
+                       Float boundary, int axis, bool greater) {
+
+    Float d0 = v0[axis] - boundary;
+    Float d1 = v1[axis] - boundary;
+    Float d2 = v2[axis] - boundary;
+
+    // Point3f v0p(v0);
+    // Point3f v1p(v1);
+    // Point3f v2p(v2);
+    // v0p[axis] = boundary;
+    // v1p[axis] = boundary;
+    // v2p[axis] = boundary;
+
+    // LOG(INFO) << "DBG LINE-WHITE:" << v0 << ";" << v0p << ";" << d0;
+    // LOG(INFO) << "DBG LINE-WHITE:" << v1 << ";" << v1p << ";" << d1;
+    // LOG(INFO) << "DBG LINE-WHITE:" << v2 << ";" << v2p << ";" << d2;
+
+    if (!greater) {
+        d0 = -d0;
+        d1 = -d1;
+        d2 = -d2;
+    }
+
+    // if triangle fully in don't proceed
+    if (d0 < 0 && d1 < 0 && d2 < 0) {
+        return true;
+    }
+
+    // if triangle fully out don't sample
+    if (d0 > 0 && d1 > 0 && d2 > 0) {
+        return false;
+    }
+
+    // v0 and v1 are out -> clip
+    if (d0 > 0 && d1 > 0 && d2 < 0) {
+        v0 = ProjectAA(v2, v0, boundary, axis);
+        v1 = ProjectAA(v2, v1, boundary, axis);
+        return true;
+    }
+
+    // v0 and v2 are out -> clip
+    else if (d0 > 0 && d1 < 0 && d2 > 0) {
+        v0 = ProjectAA(v1, v0, boundary, axis);
+        v2 = ProjectAA(v1, v2, boundary, axis);
+        return true;
+    }
+
+    // v1 and v2 are out -> clip
+    else if (d0 < 0 && d1 > 0 && d2 > 0) {
+        v1 = ProjectAA(v0, v1, boundary, axis);
+        v2 = ProjectAA(v0, v2, boundary, axis);
+        return true;
+    }
+
+    // only v0 is out
+//    else if (d0 > 0 && d1 < 0 && d2 < 0) {
+//        if (u > 0.5) {
+//            v0 = ProjectAA(v1, v0, boundary, axis);
+//        } else {
+//            v0 = ProjectAA(v2, v0, boundary, axis);
+//        }
+//        return true;
+//    }
+//
+//    // only v1 is out
+//    else if (d0 < 0 && d1 > 0 && d2 < 0) {
+//        if (u > 0.5) {
+//            v1 = ProjectAA(v0, v1, boundary, axis);
+//        } else {
+//            v1 = ProjectAA(v2, v1, boundary, axis);
+//        }
+//        return true;
+//    }
+//
+//    // only v2 is out
+//    else if (d0 < 0 && d1 < 0 && d2 > 0) {
+//        if (u > 0.5) {
+//            v2 = ProjectAA(v0, v2, boundary, axis);
+//        } else {
+//            v1 = ProjectAA(v1, v1, boundary, axis);
+//        }
+//        return true;
+//    }
+
+    return true;
+}
+
+
+void Triangle::SampleProjectionFastClip(const Point3f &ref,
+                                        const Portal& portal,
+                                        const Point2f& u,
+                                        Point3f *sampled,
+                                        Float *pdf,
+                                        Vector3f *wi) {
+
+    // project triangle vertices
+    Point3f v0 = ProjectZ(ref, mesh->p[v[0]], portal.z);
+    Point3f v1 = ProjectZ(ref, mesh->p[v[1]], portal.z);
+    Point3f v2 = ProjectZ(ref, mesh->p[v[2]], portal.z);
+
+    // clip against each portal edge
+    bool included = FastClipAA(v0, v1, v2, u.x, portal.hiY, 1, true);
+
+    if (included) {
+        included = FastClipAA(v0, v1, v2, u.x, portal.loY, 1, false);
+    } else {
+        *pdf = 0;
+        return;
+    }
+
+    if (included) {
+        included &= FastClipAA(v0, v1, v2, u.x, portal.hiX, 0, true);
+    } else {
+        *pdf = 0;
+        return;
+    }
+
+    if (included) {
+        included &= FastClipAA(v0, v1, v2, u.x, portal.loX, 0, false);
+    } else {
+        *pdf = 0;
+        return;
+    }
+
+    Float area = 0.5 * Cross(v1 - v0, v2 - v0).Length();
+
+    // sample barycentric coords
+    Point2f b = UniformSampleTriangle(u);
+    Point3f sampledPoint = b[0] * v0 + b[1] * v1 + (1 - b[0] - b[1]) * v2;
+
+    if ((sampledPoint - ref).LengthSquared() == 0) {
+        *pdf = 0;
+        return;
+    }
+
+    *wi = Normalize(sampledPoint - ref);
+    *pdf = DistanceSquared(ref, sampledPoint) / (AbsDot(Vector3f(0, 0, -1), -*wi) * area);
+}
+
+Float Triangle::MinSampleCosine(const Portal* portal) {
+
+    std::vector<Vector3f> dirs;
+    dirs.reserve(12);
+
+    // directions from each each vertex of the portal to each vertex of the triangle
+    dirs.push_back(Normalize(mesh->p[v[0]] - Point3f(portal->loX, portal->loY, portal->z)));
+    dirs.push_back(Normalize(mesh->p[v[0]] - Point3f(portal->loX, portal->hiY, portal->z)));
+    dirs.push_back(Normalize(mesh->p[v[0]] - Point3f(portal->hiX, portal->loY, portal->z)));
+    dirs.push_back(Normalize(mesh->p[v[0]] - Point3f(portal->hiX, portal->hiY, portal->z)));
+
+    dirs.push_back(Normalize(mesh->p[v[1]] - Point3f(portal->loX, portal->loY, portal->z)));
+    dirs.push_back(Normalize(mesh->p[v[1]] - Point3f(portal->loX, portal->hiY, portal->z)));
+    dirs.push_back(Normalize(mesh->p[v[1]] - Point3f(portal->hiX, portal->loY, portal->z)));
+    dirs.push_back(Normalize(mesh->p[v[1]] - Point3f(portal->hiX, portal->hiY, portal->z)));
+
+    dirs.push_back(Normalize(mesh->p[v[2]] - Point3f(portal->loX, portal->loY, portal->z)));
+    dirs.push_back(Normalize(mesh->p[v[2]] - Point3f(portal->loX, portal->hiY, portal->z)));
+    dirs.push_back(Normalize(mesh->p[v[2]] - Point3f(portal->hiX, portal->loY, portal->z)));
+    dirs.push_back(Normalize(mesh->p[v[2]] - Point3f(portal->hiX, portal->hiY, portal->z)));
+
+    Float minCos = 1;
+    for (Vector3f dir : dirs) {
+        LOG(INFO) << "DBG DIR-WHITE:" << portal->center << ";" << dir;
+        Float cos = Dot(-dir, portal->n);
+        if (cos < minCos) minCos = cos;
+    }
+
+    return minCos;
+
 }
 
 std::vector<std::shared_ptr<Shape>> CreateTriangleMeshShape(

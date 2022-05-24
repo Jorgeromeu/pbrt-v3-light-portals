@@ -64,7 +64,7 @@
 #include "integrators/volpath.h"
 #include "integrators/whitted.h"
 #include "lights/diffuse.h"
-#include "lights/portal.h"
+#include "lights/portal_light.h"
 #include "lights/distant.h"
 #include "lights/goniometric.h"
 #include "lights/infinite.h"
@@ -769,7 +769,9 @@ std::shared_ptr<AreaLight> MakeAreaLight(const std::string &name,
         area = CreateDiffuseAreaLight(light2world, mediumInterface.outside,
                                       paramSet, shape);
     else if (name == "portal") {
-        area = CreatePortalLight(light2world, mediumInterface.outside, paramSet, shape);
+
+        auto trianglePtr = std::dynamic_pointer_cast<Triangle>(shape);
+        area = CreatePortalLight(light2world, mediumInterface.outside, paramSet, trianglePtr);
     }
     else
         Warning("Area light \"%s\" unknown.", name.c_str());
