@@ -115,7 +115,7 @@ Spectrum UniformSampleOneLight(const Interaction &it, const Scene &scene,
     const std::shared_ptr<Light> &light = scene.lights[lightNum];
     Point2f uLight = sampler.Get2D();
     Point2f uScattering = sampler.Get2D();
-    return EstimateDirectProjection(it, uScattering, *light, uLight,
+    return Debug(it, uScattering, *light, uLight,
                           scene, sampler, arena, handleMedia) / lightPdf;
 }
 
@@ -123,6 +123,7 @@ Spectrum Debug(const Interaction &it, const Point2f &uScattering,
                Light &light, const Point2f &uLight,
                const Scene &scene, Sampler &sampler,
                MemoryArena &arena, bool handleMedia, bool specular) {
+    LOG(INFO) << "DBG POINT:" << it.p;
     return 0;
 }
 

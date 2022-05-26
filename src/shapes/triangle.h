@@ -103,6 +103,12 @@ class Triangle : public Shape {
                                   Point3f *sampled,
                                   Float *pdf,
                                   Vector3f* wi);
+
+    void SampleProjectionFullClip(const Point3f &ref,
+                                  const Portal &portal,
+                                  const Point2f &u,
+                                  Point3f *sampled, Float *pdf,
+                                  Vector3f *wi);
   private:
     // Triangle Private Methods
     void GetUVs(Point2f uv[3]) const {
