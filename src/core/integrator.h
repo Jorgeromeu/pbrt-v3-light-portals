@@ -46,6 +46,7 @@
 #include "reflection.h"
 #include "sampler.h"
 #include "material.h"
+#include "lights/portal.h"
 
 namespace pbrt {
 
@@ -65,15 +66,13 @@ Spectrum UniformSampleOneLight(const Interaction &it, const Scene &scene,
                                MemoryArena &arena, Sampler &sampler,
                                bool handleMedia = false,
                                const Distribution1D *lightDistrib = nullptr);
-    Spectrum UniformSampleOneLightOrPortal(const Interaction &it, const Scene &scene,
-                                           MemoryArena &arena, Sampler &sampler,
-                                           bool handleMedia = false,
-                                           const Distribution1D *lightDistrib = nullptr);
+
 Spectrum EstimateDirect(const Interaction &it, const Point2f &uShading,
-                        const Light &light, const Point2f &uLight,
-                        const Scene &scene, Sampler &sampler,
-                        MemoryArena &arena, bool handleMedia = false,
-                        bool specular = false);
+                    const std::shared_ptr<Light> light, const Point2f &uLight,
+                    const Scene &scene, Sampler &sampler,
+                    MemoryArena &arena, bool handleMedia = false,
+                    bool specular = false);
+
 
 Spectrum Debug(const Interaction &it, const Point2f &uShading,
                Light &light, const Point2f &uLight,

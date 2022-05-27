@@ -38,7 +38,6 @@ PortalLight::PortalLight(const Transform &LightToWorld,
 }
 
 
-
 Spectrum PortalLight::Power() const {
     return (twoSided ? 2 : 1) * Lemit * area * Pi;
 }
