@@ -115,8 +115,7 @@ Spectrum UniformSampleOneLight(const Interaction &it, const Scene &scene,
     const std::shared_ptr<Light> &light = scene.lights[lightNum];
     Point2f uLight = sampler.Get2D();
     Point2f uScattering = sampler.Get2D();
-    return Debug(it, uScattering, *light, uLight,
-                          scene, sampler, arena, handleMedia) / lightPdf;
+    return EstimateDirectPortal(it, uScattering, *light, uLight, scene, sampler, arena, handleMedia) / lightPdf;
 }
 
 Spectrum Debug(const Interaction &it, const Point2f &uScattering,
@@ -289,10 +288,14 @@ Spectrum EstimateDirectMIS2(const Interaction &it, const Point2f &uScattering,
     // SAMPLE LIGHT (wi)
     Li = light.Sample_Li(it, uLight, &wi, &lightPdf, &visibility);
 
-    // evaluate visibility
-    if (!visibility.Unoccluded(scene)) {
-        Li = Spectrum(0.f);
+    // evaluate visibility (my way)
+    Li = 0;
+    SurfaceInteraction lightIsect;
+    Ray ray = it.SpawnRay(wi);
+    if (scene.Intersect(ray, &lightIsect)) {
+        Li = lightIsect.Le(-wi);
     }
+
 
     if (!Li.IsBlack() && lightPdf > 0) {
 
@@ -343,6 +346,7 @@ Spectrum EstimateDirectPortal(const Interaction &it, const Point2f &uScattering,
                               const Scene &scene, Sampler &sampler,
                               MemoryArena &arena, bool handleMedia, bool specular) {
 
+
     // cast to portal light
     auto portalLight = dynamic_cast<PortalLight&>(light);
 
@@ -363,7 +367,6 @@ Spectrum EstimateDirectPortal(const Interaction &it, const Point2f &uScattering,
     Spectrum Li;
     Spectrum f;
     Float portalPdf = 0;
-    VisibilityTester visibility;
     Float weight;
 
     Spectrum Ld(0.f);
@@ -393,10 +396,56 @@ Spectrum EstimateDirectPortal(const Interaction &it, const Point2f &uScattering,
     return Ld;
 }
 
-Spectrum EstimateDirectProjection(const Interaction &it, const Point2f &uScattering,
-                                  Light &light, const Point2f &uLight,
-                                  const Scene &scene, Sampler &sampler,
-                                  MemoryArena &arena, bool handleMedia, bool specular) {
+Spectrum EstimateDirectLight(const Interaction &it, const Point2f &uScattering,
+                             Light &light, const Point2f &uLight,
+                             const Scene &scene, Sampler &sampler,
+                             MemoryArena &arena, bool handleMedia, bool specular) {
+
+    // cast reference point to surface interaction
+    const auto &ref = (const SurfaceInteraction &)it;
+
+    // reused variables
+    BxDFType bsdfFlags = specular ? BSDF_ALL : BxDFType(BSDF_ALL & ~BSDF_SPECULAR);
+    BxDFType sampledType;
+    Vector3f wi;
+    Spectrum Li;
+    Spectrum f;
+    Float pdf = 0;
+    VisibilityTester vis;
+
+    Spectrum Ld(0.f);
+
+    // SAMPLE Light
+    Li = light.Sample_Li(it, uLight, &wi, &pdf, &vis);
+
+    if (!vis.Unoccluded(scene)) {
+        Li = Spectrum(0);
+    } else {
+        // occluded (in theory)
+        if (ref.p.z > 2 && ref.p.z < 2.7) {
+            LOG(INFO) << "DBG LINE-GREEN:" << vis.P0().p << ";" << vis.P1().p;
+        }
+    }
+
+    if (!Li.IsBlack() && pdf > 0) {
+
+        // compute BSDF for sampled direction
+        f = ref.bsdf->f(ref.wo, wi, bsdfFlags) * AbsDot(wi, ref.shading.n);
+
+        if (!f.IsBlack() && !Li.IsBlack()) {
+            // weight = PowerHeuristic3(1, pdf, 1, scatteringPdf, 1, lightPdf);
+            Ld += f * Li / pdf;
+        }
+    }
+
+    return Ld;
+}
+
+
+Spectrum EstimateDirectProduct(const Interaction &it, const Point2f &uScattering,
+                              Light &light, const Point2f &uLight,
+                              const Scene &scene, Sampler &sampler,
+                              MemoryArena &arena, bool handleMedia, bool specular) {
 
     // cast to portal light
     auto portalLight = dynamic_cast<PortalLight&>(light);
