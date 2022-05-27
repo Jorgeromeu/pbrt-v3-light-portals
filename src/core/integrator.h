@@ -46,7 +46,7 @@
 #include "reflection.h"
 #include "sampler.h"
 #include "material.h"
-#include "lights/portal.h"
+#include "lights/portal_light.h"
 
 namespace pbrt {
 
@@ -85,6 +85,8 @@ Spectrum EstimateDirectPortal(const Interaction &it, const Point2f &uShading,
                         const Scene &scene, Sampler &sampler,
                         MemoryArena &arena, bool handleMedia = false,
                         bool specular = false);
+
+
 
 Spectrum EstimateDirectLight(const Interaction &it, const Point2f &uShading,
                               Light &light, const Point2f &uLight,
