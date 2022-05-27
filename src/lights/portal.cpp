@@ -33,7 +33,7 @@ PortalLight::PortalLight(const Transform &LightToWorld,
       portalNormal(portalNormal),
       // midpoint of portal
       portalCenter(Point3f(loX + (hiX - loX) / 2, loY + (hiY - loY) / 2, portalZ)),
-      portalArea(((hiX - loX) * (hiY - loY)) / 2) {
+      portalArea(((hiX - loX) * (hiY - loY))) {
     scene = nullptr;
 }
 

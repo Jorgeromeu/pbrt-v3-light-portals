@@ -424,6 +424,7 @@ bool Triangle::Intersect(const Ray &ray, Float *tHit, SurfaceInteraction *isect,
 }
 
 bool Triangle::IntersectP(const Ray &ray, bool testAlphaTexture) const {
+
     ProfilePhase p(Prof::TriIntersectP);
     ++nTests;
     // Get triangle vertices in _p0_, _p1_, and _p2_

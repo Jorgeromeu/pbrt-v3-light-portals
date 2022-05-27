@@ -87,6 +87,12 @@ Spectrum EstimateDirectPortal(const Interaction &it, const Point2f &uShading,
                         MemoryArena &arena, bool handleMedia = false,
                         bool specular = false);
 
+Spectrum EstimateDirectLight(const Interaction &it, const Point2f &uShading,
+                              Light &light, const Point2f &uLight,
+                              const Scene &scene, Sampler &sampler,
+                              MemoryArena &arena, bool handleMedia = false,
+                              bool specular = false);
+
 Spectrum EstimateDirectProduct(const Interaction &it, const Point2f &uShading,
                               Light &light, const Point2f &uLight,
                               const Scene &scene, Sampler &sampler,

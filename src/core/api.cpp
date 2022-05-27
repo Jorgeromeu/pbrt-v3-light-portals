@@ -104,6 +104,7 @@
 #include "shapes/sphere.h"
 #include "shapes/triangle.h"
 #include "shapes/plymesh.h"
+#include "shapes/plane.h"
 #include "textures/bilerp.h"
 #include "textures/checkerboard.h"
 #include "textures/constant.h"
@@ -438,6 +439,9 @@ std::vector<std::shared_ptr<Shape>> MakeShapes(const std::string &name,
     if (name == "sphere")
         s = CreateSphereShape(object2world, world2object, reverseOrientation,
                               paramSet);
+    else if (name == "aaplane")
+        s = CreateAAPlaneShape(object2world, world2object, reverseOrientation,
+                              paramSet);
     // Create remaining single _Shape_ types
     else if (name == "cylinder")
         s = CreateCylinderShape(object2world, world2object, reverseOrientation,
@@ -454,6 +458,7 @@ std::vector<std::shared_ptr<Shape>> MakeShapes(const std::string &name,
     else if (name == "hyperboloid")
         s = CreateHyperboloidShape(object2world, world2object,
                                    reverseOrientation, paramSet);
+
     if (s != nullptr) shapes.push_back(s);
 
     // Create multiple-_Shape_ types
@@ -520,7 +525,8 @@ std::vector<std::shared_ptr<Shape>> MakeShapes(const std::string &name,
             shapes = CreateTriangleMeshShape(object2world, world2object,
                                              reverseOrientation, paramSet,
                                              &*graphicsState.floatTextures);
-    } else if (name == "plymesh")
+    }
+    else if (name == "plymesh")
         shapes = CreatePLYMesh(object2world, world2object, reverseOrientation,
                                paramSet, &*graphicsState.floatTextures);
     else if (name == "heightfield")
