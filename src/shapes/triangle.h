@@ -41,6 +41,7 @@
 // shapes/triangle.h*
 #include "shape.h"
 #include "stats.h"
+#include "portal.h"
 #include <map>
 
 namespace pbrt {
@@ -93,6 +94,21 @@ class Triangle : public Shape {
     // reference point p.
     Float SolidAngle(const Point3f &p, int nSamples = 0) const;
 
+
+    Float MinSampleCosine(const Portal* portal);
+
+    void SampleProjectionFastClip(const Point3f &ref,
+                                  const Portal& portal,
+                                  const Point2f& u,
+                                  Point3f *sampled,
+                                  Float *pdf,
+                                  Vector3f* wi);
+
+    void SampleProjectionFullClip(const Point3f &ref,
+                                  const Portal &portal,
+                                  const Point2f &u,
+                                  Point3f *sampled, Float *pdf,
+                                  Vector3f *wi);
   private:
     // Triangle Private Methods
     void GetUVs(Point2f uv[3]) const {
@@ -111,6 +127,7 @@ class Triangle : public Shape {
     std::shared_ptr<TriangleMesh> mesh;
     const int *v;
     int faceIndex;
+
 };
 
 std::vector<std::shared_ptr<Shape>> CreateTriangleMesh(

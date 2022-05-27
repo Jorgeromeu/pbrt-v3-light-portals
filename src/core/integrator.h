@@ -65,10 +65,7 @@ Spectrum UniformSampleOneLight(const Interaction &it, const Scene &scene,
                                MemoryArena &arena, Sampler &sampler,
                                bool handleMedia = false,
                                const Distribution1D *lightDistrib = nullptr);
-    Spectrum UniformSampleOneLightOrPortal(const Interaction &it, const Scene &scene,
-                                           MemoryArena &arena, Sampler &sampler,
-                                           bool handleMedia = false,
-                                           const Distribution1D *lightDistrib = nullptr);
+
 Spectrum EstimateDirect(const Interaction &it, const Point2f &uShading,
                         const Light &light, const Point2f &uLight,
                         const Scene &scene, Sampler &sampler,
@@ -86,6 +83,8 @@ Spectrum EstimateDirectPortal(const Interaction &it, const Point2f &uShading,
                         const Scene &scene, Sampler &sampler,
                         MemoryArena &arena, bool handleMedia = false,
                         bool specular = false);
+
+
 
 Spectrum EstimateDirectLight(const Interaction &it, const Point2f &uShading,
                               Light &light, const Point2f &uLight,

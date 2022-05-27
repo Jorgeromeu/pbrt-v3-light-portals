@@ -1,4 +1,4 @@
-#include "lights/portal.h"
+#include "lights/portal_light.h"
 #include "paramset.h"
 #include "sampling.h"
 #include "shapes/triangle.h"
@@ -12,38 +12,32 @@ namespace pbrt {
 PortalLight::PortalLight(const Transform &LightToWorld,
                          const MediumInterface &mediumInterface,
                          const Spectrum &Lemit, int nSamples,
-                         const std::shared_ptr<Shape> &shape,
+                         const std::shared_ptr<Triangle> &shape,
                          const Float &loY,
                          const Float &hiY,
                          const Float &loX,
                          const Float &hiX,
                          const Float &portalZ,
-                         const Vector3f &portalNormal,
+                         const Normal3f &portalNormal,
                          bool twoSided)
 : DiffuseAreaLight(LightToWorld, mediumInterface, Lemit, nSamples, shape, twoSided),
       Lemit(Lemit),
       shape(shape),
       twoSided(twoSided),
-      area(shape->Area()),
-      loX(loX),
-      hiX(hiX),
-      loY(loY),
-      hiY(hiY),
-      portalZ(portalZ),
-      portalNormal(portalNormal),
-      // midpoint of portal
-      portalCenter(Point3f(loX + (hiX - loX) / 2, loY + (hiY - loY) / 2, portalZ)),
-      portalArea(((hiX - loX) * (hiY - loY))) {
+      minCos(0),
+      area(shape->Area()) {
+
+    // initialize portal
+    portal = new Portal(loY, hiY, loX, hiX, portalZ, portalNormal);
     scene = nullptr;
 }
-
-
 
 Spectrum PortalLight::Power() const {
     return (twoSided ? 2 : 1) * Lemit * area * Pi;
 }
 
 void PortalLight::Preprocess(const Scene &scene) {
+    minCos = shape->MinSampleCosine(this->portal);
     this->scene = &scene;
 }
 
@@ -72,66 +66,6 @@ Float PortalLight::Pdf_Li(const Interaction &ref,
                           const Vector3f &wi) const {
     ProfilePhase _(Prof::LightPdf);
     return shape->Pdf(ref, wi);
-}
-
-// Intersection Sampling
-Point3f PortalLight::SampleIntersection(const Interaction &ref,
-                                        const Point2f &uPortal,
-                                        Vector3f *wi,
-                                        Float *pdf) const {
-
-    // HARDCODED PRODUCT
-    float loXProd = -2.26887;
-    float hiXProd = -1.73113;
-
-    float prodArea = ((hiXProd - loXProd) * (hiY - loY)) / 2;
-
-    // sample intersection uniformly
-    float randY = loY + uPortal.x * (hiY - loY);
-    float randX = loXProd + uPortal.y * (hiXProd - loXProd);
-    Point3f sampledPoint = Point3f(randX, randY, portalZ);
-
-    *wi = Normalize(sampledPoint - ref.p);
-    *pdf = DistanceSquared(ref.p, sampledPoint) / (AbsDot(portalNormal, -*wi) * prodArea);
-
-    return sampledPoint;
-}
-
-
-// Visibility Sampling
-Point3f PortalLight::SamplePortal(const Interaction &ref,
-                                  const Point2f &uPortal,
-                                  Vector3f *wi,
-                                  Float *pdf) const {
-
-    // sample portal uniformly
-    float randY = loY + uPortal.y * (hiY - loY);
-    float randX = loX + uPortal.x * (hiX - loX);
-    Point3f sampledPoint = Point3f(randX, randY, portalZ);
-
-    *wi = Normalize(sampledPoint - ref.p);
-    *pdf = DistanceSquared(ref.p, sampledPoint) / (AbsDot(portalNormal, -*wi) * portalArea);
-
-    return sampledPoint;
-}
-
-Float PortalLight::Pdf_Portal(const Interaction &ref,
-                              const Vector3f &wi) const {
-
-    // axis aligned across z axis, plane intersection
-    Ray r = ref.SpawnRay(wi);
-
-    if (r.d.z == 0) return 0;
-
-    float t = (portalZ - r.o.z) / r.d.z;
-    Point3f isect = r.o + r.d * t;
-
-    // if hit plane
-    if (isect.y >= loY && isect.y <= hiY && isect.x >= loX && isect.x <= hiX) {
-        return DistanceSquared(ref.p, isect) / (AbsDot(portalNormal, -Normalize(wi)) * portalArea);
-    }
-
-    return 0;
 }
 
 // FOR BIDIRECTIONAL METHODS
@@ -181,12 +115,19 @@ void PortalLight::Pdf_Le(const Ray &ray, const Normal3f &n, Float *pdfPos,
                        : CosineHemispherePdf(Dot(n, ray.d));
 }
 
+void PortalLight::SampleProj(const Point3f &ref,
+                             const Point2f& u,
+                             Point3f *sampled,
+                             Float *pdf,
+                             Vector3f *wi) const {
+    shape->SampleProjectionFastClip(ref, *portal, u, sampled, pdf, wi);
+}
 
 
 std::shared_ptr<PortalLight> CreatePortalLight(
         const Transform &light2world,
         const Medium *medium,
-        const ParamSet &paramSet, const std::shared_ptr<Shape> &shape) {
+        const ParamSet &paramSet, const std::shared_ptr<Triangle> &shape) {
 
     Spectrum L = paramSet.FindOneSpectrum("L", Spectrum(1.0));
     Spectrum sc = paramSet.FindOneSpectrum("scale", Spectrum(1.0));
@@ -196,15 +137,15 @@ std::shared_ptr<PortalLight> CreatePortalLight(
     // find geometry of portal
     Float loY = paramSet.FindOneFloat("loY", 0);
     Float hiY = paramSet.FindOneFloat("hiY", 0);
-    Float loZ = paramSet.FindOneFloat("loZ", 0);
-    Float hiZ = paramSet.FindOneFloat("hiZ", 0);
-    Float portalX = paramSet.FindOneFloat("portalX", 0);
-    Vector3f portalNormal = paramSet.FindOneVector3f("portalNormal", Vector3f(1, 0, 0));
+    Float loX = paramSet.FindOneFloat("loZ", 0);
+    Float hiX = paramSet.FindOneFloat("hiZ", 0);
+    Float portalZ = paramSet.FindOneFloat("portalX", 0);
+    Normal3f n = paramSet.FindOneNormal3f("portalNormal", Normal3f (0, 0, -1));
 
     if (PbrtOptions.quickRender) nSamples = std::max(1, nSamples / 4);
 
     return std::make_shared<PortalLight>(light2world, medium, L * sc,
-                                         nSamples, shape, loY, hiY, loZ, hiZ, portalX, portalNormal, twoSided);
+                                         nSamples, shape, loY, hiY, loX, hiX, portalZ, n, twoSided);
 }
 
 }  // namespace pbrt

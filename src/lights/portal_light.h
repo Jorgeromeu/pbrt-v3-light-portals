@@ -12,6 +12,8 @@
 #include "light.h"
 #include "diffuse.h"
 #include "primitive.h"
+#include "portal.h"
+#include "shapes/triangle.h"
 
 namespace pbrt {
 
@@ -19,17 +21,21 @@ namespace pbrt {
 class PortalLight : public DiffuseAreaLight {
   public:
 
+    // reference to portal
+    const Portal* portal;
+    Float minCos;
+
     // DiffuseAreaLight Public Methods
     PortalLight(const Transform &LightToWorld,
                 const MediumInterface &mediumInterface, const Spectrum &Le,
                 int nSamples,
-                const std::shared_ptr<Shape> &shape,
+                const std::shared_ptr<Triangle> &shape,
                 const Float &loY,
                 const Float &hiY,
                 const Float &loX,
                 const Float &hiX,
                 const Float &portalZ,
-                const Vector3f &portalNormal,
+                const Normal3f &portalNormal,
                 bool twoSided = false);
 
             Spectrum L(const Interaction &intr, const Vector3f &w) const {
@@ -45,37 +51,24 @@ class PortalLight : public DiffuseAreaLight {
     void Pdf_Le(const Ray &, const Normal3f &, Float *pdfPos,
                 Float *pdfDir) const;
 
-    Point3f SamplePortal(const Interaction &it,
-                         const Point2f &uPortal,
-                         Vector3f *wi,
-                         Float *pdf) const;
 
-    Float Pdf_Portal(const Interaction &it,
-                       const Vector3f &wi) const;
-
-    Point3f SampleIntersection(const Interaction &ref, const Point2f &uPortal, Vector3f *wi, Float *pdf) const;
-
-    // portal data
-    const Float loX;
-    const Float hiX;
-    const Float loY;
-    const Float hiY;
-    const Float portalZ;
-    const Vector3f portalNormal;
-    const Point3f portalCenter;
+    void SampleProj(const Point3f &ref,
+                    const Point2f& u,
+                    Point3f *sampled,
+                    Float *pdf, Vector3f *wi) const;
 
   protected:
+
+
     // DiffuseAreaLight Protected Data
     const Spectrum Lemit;
-    std::shared_ptr<Shape> shape;
+    std::shared_ptr<Triangle> shape;
     // Added after book publication: by default, DiffuseAreaLights still
     // only emit in the hemimsphere around the surface normal.  However,
     // this behavior can now be overridden to give emission on both sides.
     const bool twoSided;
     const Float area;
 
-    // required data
-    const Float portalArea;
     const Scene* scene;
 
     void Preprocess(const Scene &scene) override;
@@ -84,7 +77,7 @@ class PortalLight : public DiffuseAreaLight {
 
 std::shared_ptr<PortalLight> CreatePortalLight(
     const Transform &light2world, const Medium *medium,
-    const ParamSet &paramSet, const std::shared_ptr<Shape> &shape);
+    const ParamSet &paramSet, const std::shared_ptr<Triangle> &shape);
 
 }  // namespace pbrt
 
