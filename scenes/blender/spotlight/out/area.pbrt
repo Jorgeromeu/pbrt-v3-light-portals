@@ -1,6 +1,6 @@
-Film "image" "integer xresolution" [500] "integer yresolution" [500] "string filename" "output00001.exr"
-PixelFilter "box" "float xwidth" [0.5] "float ywidth" [0.5] 
-Accelerator "bvh" 
+Film "image" "integer xresolution" [500] "integer yresolution" [500] "string filename" "arealight.exr"
+PixelFilter "box" "float xwidth" [0.5] "float ywidth" [0.5]
+Accelerator "bvh"
 "string splitmethod" "sah"
 "integer maxnodeprims" [4]
 Sampler "halton"
@@ -97,25 +97,6 @@ WorldBegin
 		]
 	AttributeEnd
 	
-
-	AttributeBegin
-		Transform [1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 -2.000000 0.000000 3.200000 1.000000 ]
-		AreaLightSource "diffuse" "rgb L" [ 20.0 20.0 20.0 ]		
-		Shape "trianglemesh"
-		"point P" [
-				
-		]
-		"normal N" [
-				
-		]
-		"float st" [
-		]
-		"integer indices" [
-		 
-		]
-	AttributeEnd
-	
-
 	AttributeBegin
 		Transform [1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 -2.000000 0.000000 3.200000 1.000000 ]
 		Material "matte"		
@@ -123,7 +104,6 @@ WorldBegin
 		"color Kd" [ 0.6886845827102661 0.6548573970794678 0.6651450991630554]		
 		Shape "plymesh" "string filename" ["meshes/00001/shade_mat1.ply"]
 	AttributeEnd
-	
 
 	AttributeBegin
 		Transform [-0.000000 1.078910 -0.000000 0.000000 -0.864367 -0.000000 -0.645691 0.000000 -0.645691 -0.000000 0.864367 0.000000 -2.213250 0.000000 -0.128061 1.000000 ]
@@ -132,29 +112,25 @@ WorldBegin
 		"color Kd" [ 0.3918960392475128 0.8000000715255737 0.7879641652107239]		
 		Shape "plymesh" "string filename" ["meshes/00001/Suzanne_mat0.ply"]
 	AttributeEnd
-	
 
 	AttributeBegin
-		Transform [-0.121921 0.000000 0.000000 0.000000 0.000000 0.391853 0.000000 0.000000 -0.000000 0.000000 -0.391853 0.000000 -2.000000 0.000000 3.008142 1.000000 ]
-		AreaLightSource "diffuse" "rgb L" [ 20.0 20.0 20.0 ]		
-		Shape "trianglemesh"
-		"point P" [
-		2.2052745819091797 -2.205274820327759 -2.9802322387695312e-08 2.2052764892578125 2.205274820327759 4.76837158203125e-07 -2.2052764892578125 2.205274820327759 3.814697265625e-06 2.2052745819091797 -2.205274820327759 -2.9802322387695312e-08 -2.2052764892578125 2.205274820327759 3.814697265625e-06 -2.2052745819091797 -2.205274820327759 8.940696716308594e-08		
-		]
-		"normal N" [
-		3.9190899769891985e-07 -4.797508950105112e-07 0.9999999403953552 3.9190899769891985e-07 -4.797508950105112e-07 0.9999999403953552 3.9190899769891985e-07 -4.797508950105112e-07 0.9999999403953552 3.9190899769891985e-07 -4.797508950105112e-07 0.9999999403953552 3.9190899769891985e-07 -4.797508950105112e-07 0.9999999403953552 3.9190899769891985e-07 -4.797508950105112e-07 0.9999999403953552		
-		]
-		"float st" [
-		0.0 0.0 
-		0.0 0.0 
-		0.0 0.0 
-		0.0 0.0 
-		0.0 0.0 
-		0.0 0.0 
-		]
-		"integer indices" [
-		0 1 2 3 4 5 
-		]
+		#Transform [-0.121921 0.000000 0.000000 0.000000 0.000000 0.391853 0.000000 0.000000 -0.000000 0.000000 -0.391853 0.000000 -2.000000 0.000000 3.008142 1.000000 ]
+		AreaLightSource "portal" "rgb L" [ 20.0 20.0 20.0 ]
+
+        "float loY" -0.484325
+        "float hiY" 0.484325
+        "float loZ" -2.48432
+        "float hiZ" -1.51568
+        "float portalX" 2.79644
+        "vector3 portalNormal" [0, 0, -1]
+
+        Shape "aaplane"
+        "float loX" -2.26887
+        "float hiX" -1.73113
+        "float loY" -0.864143
+        "float hiY" 0.864143
+        "float z" 3.00814
+        "normal n" [0, 0, -1]
 	AttributeEnd
 	
 
