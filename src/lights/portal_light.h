@@ -38,7 +38,7 @@ class PortalLight : public DiffuseAreaLight {
                 const Normal3f &portalNormal,
                 bool twoSided = false);
 
-            Spectrum L(const Interaction &intr, const Vector3f &w) const {
+    Spectrum L(const Interaction &intr, const Vector3f &w) const {
         return (twoSided || Dot(intr.n, w) > 0) ? Lemit : Spectrum(0.f);
     }
     Spectrum Power() const;

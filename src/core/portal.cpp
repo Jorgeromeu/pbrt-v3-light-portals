@@ -14,7 +14,7 @@ Portal::Portal(const Float loY, const Float hiY,
         n(n),
         // compute center and area here so its cached for future lookups
         center(Point3f(loX + (hiX - loX) / 2, loY + (hiY - loY) / 2, z)),
-        area(((hiX - loX) * (hiY - loY)) / 2) {
+        area(((hiX - loX) * (hiY - loY))) {
 
 }
 

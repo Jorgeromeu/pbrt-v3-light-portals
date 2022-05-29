@@ -1,5 +1,6 @@
 #include "shapes/plane.h"
 #include "paramset.h"
+#include "portal.h"
 
 namespace pbrt {
 
@@ -67,6 +68,47 @@ Interaction AAPlane::Sample(const Point2f &u, Float *pdf) const {
     return it;
 }
 
+void AAPlane::SampleProjection(const Point3f& ref,
+                               const Portal& portal,
+                               const Point2f& u,
+                               Vector3f* wi,
+                               Float* pdf) {
+
+    // TODO make efficient :)
+    // can make it faster by only doing math w x and y, not Z
+    Point3f pLo = Point3f(loX, loY, z);
+    Point3f pHi = Point3f(hiX, hiY, z);
+
+    auto dLo = Normalize(ref - pLo);
+    auto dHi = Normalize(ref - pHi);
+
+    if (dLo.z == 0 || dHi.z == 0) {
+        *pdf = 0;
+        return;
+    }
+
+    Float tLo =  (portal.z - pLo.z) / dLo.z;
+    Float tHi =  (portal.z - pHi.z) / dHi.z;
+
+    Point3f projLo = pLo + dLo * tLo;
+    Point3f projHi = pHi + dHi * tHi;
+
+    // compute intersection
+    Point3f isectHi = Max(Point3f(portal.loX, portal.loY, portal.z), projLo);
+    Point3f isectLo = Min(Point3f(portal.hiX, portal.hiY, portal.z), projHi);
+
+    // TODO: possibly check for bad bounds (or maybe this is slower?)
+
+    Float isectLenX = isectHi.x - isectLo.x;
+    Float isectLenY = isectHi.y - isectLo.y;
+
+    Float randX = isectLo.x + u.x * isectLenX;
+    Float randY = isectLo.y + u.y * isectLenY;
+    Point3f sampled = Point3f(randX, randY, portal.z);
+
+    *wi = Normalize(sampled - ref);
+    *pdf = DistanceSquared(ref, sampled) / (AbsDot(portal.n, -*wi) * isectLenX * isectLenY);
+}
 
 std::shared_ptr<Shape> CreateAAPlaneShape(
         const Transform *o2w, const Transform *w2o, bool reverseOrientation,
