@@ -1,13 +1,13 @@
-#include "portal.h"
+#include "aaportal.h"
 #include "shapes/triangle.h"
 #include "shapes/plane.h"
 #include "geometry.h"
 #include "interaction.h"
 
-Portal::Portal(const Float loY, const Float hiY,
-               const Float loX, const Float hiX, const Float z,
-               bool greater,
-               AAPlane &light) :
+AAPortal::AAPortal(const Float loY, const Float hiY,
+                   const Float loX, const Float hiX, const Float z,
+                   bool greater,
+                   AAPlane &light) :
         loY(loY),
         hiY(hiY),
         hiX(hiX),
@@ -17,7 +17,6 @@ Portal::Portal(const Float loY, const Float hiY,
         light(light),
         // compute portal center area and normal here so its cached for future lookups
         n(greater ? Normal3f(0, 0, 1) : Normal3f(0, 0, -1)),
-        center(Point3f(loX + (hiX - loX) / 2, loY + (hiY - loY) / 2, z)),
         area(((hiX - loX) * (hiY - loY))) {
 
     // Calculate viewing frustum
@@ -61,10 +60,10 @@ Portal::Portal(const Float loY, const Float hiY,
 
 }
 
-// Portal area sapling
-void Portal::SamplePortal(const Interaction &ref,
-                          const Point2f &u,
-                          Vector3f *wi, Float *pdf) const {
+// AAPortal area sapling
+void AAPortal::SamplePortal(const Interaction &ref,
+                            const Point2f &u,
+                            Vector3f *wi, Float *pdf) const {
 
     // sample portal uniformly
     float randY = loY + u.y * (hiY - loY);
@@ -75,7 +74,7 @@ void Portal::SamplePortal(const Interaction &ref,
     *pdf = DistanceSquared(ref.p, sampledPoint) / (AbsDot(this->n, -*wi) * area);
 }
 
-Float Portal::Pdf_Portal(const Interaction &ref, const Vector3f &wi) const {
+Float AAPortal::Pdf_Portal(const Interaction &ref, const Vector3f &wi) const {
 
     // axis aligned across z axis, plane intersection
     Ray r = ref.SpawnRay(wi);
@@ -93,7 +92,7 @@ Float Portal::Pdf_Portal(const Interaction &ref, const Vector3f &wi) const {
     return 0;
 }
 
-bool Portal::InFront(const Point3f& p) const {
+bool AAPortal::InFront(const Point3f& p) const {
     if (greater) {
         return p.z > z;
     } else {
@@ -101,7 +100,7 @@ bool Portal::InFront(const Point3f& p) const {
     }
 }
 
-bool Portal::InFrustrum(const Point3f &p) const {
+bool AAPortal::InFrustum(const Point3f &p) const {
     bool res = true;
     res &= Dot(fp0 - p, fn0) >= 0;
     res &= Dot(fp1 - p, fn1) >= 0;
@@ -111,8 +110,8 @@ bool Portal::InFrustrum(const Point3f &p) const {
     return res;
 }
 
-void Portal::SampleProj(const Interaction &ref, const Point2f &u,
-                        Vector3f *wi, Float *pdf) const {
+void AAPortal::SampleProj(const Interaction &ref, const Point2f &u,
+                          Vector3f *wi, Float *pdf) const {
 
     // TODO make efficient :)
     // can make it faster by only doing math w x and y, not Z
@@ -148,4 +147,9 @@ void Portal::SampleProj(const Interaction &ref, const Point2f &u,
 
     *wi = Normalize(sampled - ref.p);
     *pdf = DistanceSquared(ref.p, sampled) / (AbsDot(n, -*wi) * isectLenX * isectLenY);
+}
+
+Float AAPortal::Pdf_Proj(const Interaction &ref, const Vector3f &wi) const {
+    // TODO implement for MIS
+    return 0;
 }

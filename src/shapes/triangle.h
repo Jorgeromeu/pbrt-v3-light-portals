@@ -41,7 +41,7 @@
 // shapes/triangle.h*
 #include "shape.h"
 #include "stats.h"
-#include "portal.h"
+#include "portals/aaportal.h"
 #include <map>
 
 namespace pbrt {
@@ -95,17 +95,17 @@ class Triangle : public Shape {
     Float SolidAngle(const Point3f &p, int nSamples = 0) const;
 
 
-    Float MinSampleCosine(const Portal* portal);
+    Float MinSampleCosine(const AAPortal* portal);
 
     void SampleProjectionFastClip(const Point3f &ref,
-                                  const Portal& portal,
+                                  const AAPortal& portal,
                                   const Point2f& u,
                                   Point3f *sampled,
                                   Float *pdf,
                                   Vector3f* wi);
 
     void SampleProjectionFullClip(const Point3f &ref,
-                                  const Portal &portal,
+                                  const AAPortal &portal,
                                   const Point2f &u,
                                   Point3f *sampled, Float *pdf,
                                   Vector3f *wi);

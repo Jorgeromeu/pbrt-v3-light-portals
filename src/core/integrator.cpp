@@ -43,7 +43,7 @@
 #include "progressreporter.h"
 #include "camera.h"
 #include "stats.h"
-#include "portal.h"
+#include "portals/aaportal.h"
 // #include "lights/portal_light.h"
  #include "lights/portal_light.h"
 
@@ -51,16 +51,16 @@ namespace pbrt {
 
 STAT_COUNTER("Integrator/Camera rays traced", nCameraRays);
 
-STAT_PERCENT("Portal/generic%", genericNum, genericDen);
-STAT_PERCENT("Portal/occluded Li samples", occludedNum, occludedDen);
-STAT_COUNTER("Portal/genericCnt", genericCnt);
+STAT_PERCENT("AAPortal/generic%", genericNum, genericDen);
+STAT_PERCENT("AAPortal/occluded Li samples", occludedNum, occludedDen);
+STAT_COUNTER("AAPortal/genericCnt", genericCnt);
 
-STAT_FLOAT_DISTRIBUTION("Portal/weightDistribMIS2", weightDistribMIS2);
-STAT_FLOAT_DISTRIBUTION("Portal/weightDistribMIS3", weightDistribMIS3);
-STAT_FLOAT_DISTRIBUTION("Portal/weightDistribStandard", weightDistribStandard);
-STAT_FLOAT_DISTRIBUTION("Portal/genericDistr", genericDistr);
+STAT_FLOAT_DISTRIBUTION("AAPortal/weightDistribMIS2", weightDistribMIS2);
+STAT_FLOAT_DISTRIBUTION("AAPortal/weightDistribMIS3", weightDistribMIS3);
+STAT_FLOAT_DISTRIBUTION("AAPortal/weightDistribStandard", weightDistribStandard);
+STAT_FLOAT_DISTRIBUTION("AAPortal/genericDistr", genericDistr);
 
-STAT_PERCENT("Portal/numOutliers", numOutliersNum, numOutliersDen);
+STAT_PERCENT("AAPortal/numOutliers", numOutliersNum, numOutliersDen);
 
 // Integrator Method Definitions
 Integrator::~Integrator() {}

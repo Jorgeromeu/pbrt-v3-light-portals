@@ -38,7 +38,7 @@
 #include "sampling.h"
 #include "efloat.h"
 #include "ext/rply.h"
-#include "portal.h"
+#include "portals/aaportal.h"
 #include <array>
 
 namespace pbrt {
@@ -857,7 +857,7 @@ inline bool ClipAA(Point3f& v0, Point3f& v1, Point3f& v2,
 }
 
 void Triangle::SampleProjectionFastClip(const Point3f &ref,
-                                        const Portal& portal,
+                                        const AAPortal& portal,
                                         const Point2f& u,
                                         Point3f *sampled,
                                         Float *pdf,
@@ -914,7 +914,7 @@ void Triangle::SampleProjectionFastClip(const Point3f &ref,
  * @param portal
  * @return the minimum cosine with which we consider sampling the portal
  */
-Float Triangle::MinSampleCosine(const Portal* portal) {
+Float Triangle::MinSampleCosine(const AAPortal* portal) {
 
     std::vector<Vector3f> dirs;
     dirs.reserve(12);

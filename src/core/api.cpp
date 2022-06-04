@@ -1438,7 +1438,7 @@ void pbrtShape(const std::string &name, const ParamSet &params) {
 }
 
 void pbrtPortal(const std::string &name, const ParamSet &params) {
-        VERIFY_WORLD("Portal");
+        VERIFY_WORLD("AAPortal");
 
         std::cout << "lmaoooo" << std::endl;
 

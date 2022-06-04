@@ -1,37 +1,40 @@
-#ifndef PBRT_V3_PORTAL_H
-#define PBRT_V3_PORTAL_H
+#ifndef PBRT_V3_AAPORTAL_H
+#define PBRT_V3_AAPORTAL_H
 
 #include "pbrt.h"
 #include "geometry.h"
 #include "shapes/plane.h"
+#include "portal.h"
 
 using namespace pbrt;
 
-class Portal {
+class AAPortal : public Portal {
 public:
 
-    Portal(const Float loY, const Float hiY,
-           const Float loX, const Float hiX, const Float z,
-           bool greater,
-           AAPlane &light);
+    AAPortal(const Float loY, const Float hiY,
+             const Float loX, const Float hiX, const Float z,
+             bool greater,
+             AAPlane &light);
 
-    Portal(const std::string &data, const AAPlane &light);
+    bool InFrustum(const Point3f &p) const override;
+
+    bool InFront(const Point3f &p) const override;
+
 
     void SamplePortal(const Interaction &ref,
                       const Point2f &u,
                       Vector3f *wi,
-                      Float *pdf) const;
+                      Float *pdf) const override;
 
     Float Pdf_Portal(const Interaction &ref,
-                     const Vector3f &wi) const;
-
-    bool InFrustrum(const Point3f &p) const;
-
-    bool InFront(const Point3f &p) const;
+                     const Vector3f &wi) const override;
 
     void SampleProj(const Interaction &ref,
                     const Point2f &u,
-                    Vector3f *wi, Float *pdf) const;
+                    Vector3f *wi, Float *pdf) const override;
+
+    Float Pdf_Proj(const Interaction &ref,
+                   const Vector3f &wi) const override;
 
     // light geometry
     const AAPlane& light;
@@ -45,7 +48,6 @@ public:
     bool greater;
 
     Normal3f n;
-    Point3f center;
     Float area;
 
     // frustum data
@@ -60,4 +62,4 @@ public:
     Point3f fp3;
 };
 
-#endif //PBRT_V3_PORTAL_H
+#endif //PBRT_V3_AAPORTAL_H

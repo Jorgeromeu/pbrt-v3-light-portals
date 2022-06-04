@@ -2,7 +2,7 @@
 #define PBRT_V3_PORTAL_LIGHT_H
 
 #include "shapes/plane.h"
-#include "portal.h"
+#include "portals/aaportal.h"
 #include "diffuse.h"
 
 namespace pbrt {
@@ -13,7 +13,7 @@ class PortalLight : public DiffuseAreaLight {
 
 public:
 
-    const Portal& portal;
+    const AAPortal& portal;
     std::shared_ptr<AAPlane> shape;
     const PortalStrategy strat;
 
@@ -21,7 +21,7 @@ public:
                 const MediumInterface &mediumInterface, const Spectrum &Le,
                 int nSamples,
                 const std::shared_ptr<AAPlane> &light,
-                const Portal &portal,
+                const AAPortal &portal,
                 const PortalStrategy strategy,
                 bool twoSided = false);
 

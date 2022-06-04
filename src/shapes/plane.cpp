@@ -68,7 +68,7 @@ Interaction AAPlane::Sample(const Point2f &u, Float *pdf) const {
 }
 //
 //void AAPlane::SampleProjection(const Point3f& ref,
-//                               const Portal& portal,
+//                               const AAPortal& portal,
 //                               const Point2f& u,
 //                               Vector3f* wi,
 //                               Float* pdf) {

@@ -1,7 +1,7 @@
 #include "portal_light.h"
 #include "stats.h"
 #include "paramset.h"
-#include "portal.h"
+#include "portals/aaportal.h"
 #include "reflection.h"
 #include "diffuse.h"
 #include "scene.h"
@@ -13,7 +13,7 @@ PortalLight::PortalLight(const Transform &LightToWorld,
                          const MediumInterface &mediumInterface, const Spectrum &Le,
                          int nSamples,
                          const std::shared_ptr<AAPlane> &light,
-                         const Portal &portal,
+                         const AAPortal &portal,
                          const PortalStrategy strategy,
                          bool twoSided)
         : DiffuseAreaLight(LightToWorld, mediumInterface, Le, nSamples, light, twoSided),
@@ -31,7 +31,7 @@ Spectrum PortalLight::EstimateDirect(const Interaction &it,
     }
 
     // if not in frustum, return black
-    if (!portal.InFrustrum(it.p)) {
+    if (!portal.InFrustum(it.p)) {
         return 0;
     }
 
@@ -199,7 +199,7 @@ std::shared_ptr<PortalLight> CreateAAPortal(
     std::string portalData = paramSet.FindOneString("portalData", "");
     auto parseTree = sexpresso::parse(portalData);
 
-    Portal* portal = nullptr;
+    AAPortal* portal = nullptr;
     auto type = parseTree.getChild(0).getChild(0).toString();
     if (type == "AA") {
         Float loX = std::stof(parseTree.getChild(0).getChild(1).toString());
@@ -209,7 +209,7 @@ std::shared_ptr<PortalLight> CreateAAPortal(
         Float z = std::stof(parseTree.getChild(0).getChild(5).toString());
         std::string orientation = parseTree.getChild(0).getChild(6).toString();
         bool greater = orientation == "+";
-        portal = new Portal(loY, hiY, loX, hiX, z, greater, *shape);
+        portal = new AAPortal(loY, hiY, loX, hiX, z, greater, *shape);
     }
 
     PortalStrategy strategy;
@@ -221,7 +221,7 @@ std::shared_ptr<PortalLight> CreateAAPortal(
     } else if (st == "projection") {
         strategy = PortalStrategy::SampleProjection;
     } else {
-        Warning("Portal strategy unknown");
+        Warning("AAPortal strategy unknown");
     }
 
 
