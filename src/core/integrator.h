@@ -46,7 +46,6 @@
 #include "reflection.h"
 #include "sampler.h"
 #include "material.h"
-#include "lights/portal_light.h"
 
 namespace pbrt {
 

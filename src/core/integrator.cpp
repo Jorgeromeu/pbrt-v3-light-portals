@@ -45,7 +45,7 @@
 #include "stats.h"
 #include "portal.h"
 // #include "lights/portal_light.h"
- #include "lights/aaportal_light.h"
+ #include "lights/portal_light.h"
 
 namespace pbrt {
 
@@ -127,7 +127,7 @@ Spectrum EstimateDirect(const Interaction &it, const Point2f &uScattering,
                         MemoryArena &arena, bool handleMedia, bool specular) {
 
 
-    auto portalLight = std::dynamic_pointer_cast<AAPortalLight>(light);
+    auto portalLight = std::dynamic_pointer_cast<PortalLight>(light);
     if (portalLight != nullptr) {
         return portalLight->EstimateDirect(it, uScattering, uLight, scene, specular);
     }
@@ -256,6 +256,8 @@ Spectrum EstimateDirect(const Interaction &it, const Point2f &uScattering,
 
     return Ld;
 }
+
+
 
 //
 //Spectrum EstimateDirectMIS2(const Interaction &it, const Point2f &uScattering,
@@ -399,50 +401,51 @@ Spectrum EstimateDirect(const Interaction &it, const Point2f &uScattering,
 //    return Ld;
 //}
 //
-//Spectrum EstimateDirectLight(const Interaction &it, const Point2f &uScattering,
-//                             Light &light, const Point2f &uLight,
-//                             const Scene &scene, Sampler &sampler,
-//                             MemoryArena &arena, bool handleMedia, bool specular) {
-//
-//    // cast reference point to surface interaction
-//    const auto &ref = (const SurfaceInteraction &)it;
-//
-//    // reused variables
-//    BxDFType bsdfFlags = specular ? BSDF_ALL : BxDFType(BSDF_ALL & ~BSDF_SPECULAR);
-//    BxDFType sampledType;
-//    Vector3f wi;
-//    Spectrum Li;
-//    Spectrum f;
-//    Float pdf = 0;
-//    VisibilityTester vis;
-//
-//    Spectrum Ld(0.f);
-//
-//    // SAMPLE Light
-//    Li = light.Sample_Li(it, uLight, &wi, &pdf, &vis);
-//
-//    if (!vis.Unoccluded(scene)) {
-//        Li = Spectrum(0);
-//    } else {
-//        // occluded (in theory)
-//        if (ref.p.z > 2 && ref.p.z < 2.7) {
-//            LOG(INFO) << "DBG LINE-GREEN:" << vis.P0().p << ";" << vis.P1().p;
-//        }
-//    }
-//
-//    if (!Li.IsBlack() && pdf > 0) {
-//
-//        // compute BSDF for sampled direction
-//        f = ref.bsdf->f(ref.wo, wi, bsdfFlags) * AbsDot(wi, ref.shading.n);
-//
-//        if (!f.IsBlack() && !Li.IsBlack()) {
-//            // weight = PowerHeuristic3(1, pdf, 1, scatteringPdf, 1, lightPdf);
-//            Ld += f * Li / pdf;
-//        }
-//    }
-//
-//    return Ld;
-//}
+
+Spectrum EstimateDirectLight(const Interaction &it, const Point2f &uScattering,
+                             Light &light, const Point2f &uLight,
+                             const Scene &scene, Sampler &sampler,
+                             MemoryArena &arena, bool handleMedia, bool specular) {
+
+    // cast reference point to surface interaction
+    const auto &ref = (const SurfaceInteraction &)it;
+
+    // reused variables
+    BxDFType bsdfFlags = specular ? BSDF_ALL : BxDFType(BSDF_ALL & ~BSDF_SPECULAR);
+    BxDFType sampledType;
+    Vector3f wi;
+    Spectrum Li;
+    Spectrum f;
+    Float pdf = 0;
+    VisibilityTester vis;
+
+    Spectrum Ld(0.f);
+
+    // SAMPLE Light
+    Li = light.Sample_Li(it, uLight, &wi, &pdf, &vis);
+
+    if (!vis.Unoccluded(scene)) {
+        Li = Spectrum(0);
+    } else {
+        // occluded (in theory)
+        if (ref.p.z > 2 && ref.p.z < 2.7) {
+            LOG(INFO) << "DBG LINE-GREEN:" << vis.P0().p << ";" << vis.P1().p;
+        }
+    }
+
+    if (!Li.IsBlack() && pdf > 0) {
+
+        // compute BSDF for sampled direction
+        f = ref.bsdf->f(ref.wo, wi, bsdfFlags) * AbsDot(wi, ref.shading.n);
+
+        if (!f.IsBlack() && !Li.IsBlack()) {
+            // weight = PowerHeuristic3(1, pdf, 1, scatteringPdf, 1, lightPdf);
+            Ld += f * Li / pdf;
+        }
+    }
+
+    return Ld;
+}
 //
 //
 //Spectrum EstimateDirectProduct(const Interaction &it, const Point2f &uScattering,

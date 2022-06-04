@@ -4,10 +4,10 @@ Accelerator "bvh"
 "string splitmethod" "sah"
 "integer maxnodeprims" [4]
 Sampler "halton"
-"integer pixelsamples" [10]
+"integer pixelsamples" [20]
 "bool samplepixelcenter" "false"
-Integrator "directlighting" "string strategy" "one"
-# Integrator "path"
+# Integrator "directlighting" "string strategy" "one"
+Integrator "path"
 "integer maxdepth" [2]
 Scale -1 1 1 #avoid the 'flipped image' bug..
 LookAt	5.914639949798584 0.0 2.0
@@ -116,18 +116,10 @@ WorldBegin
 
 	AttributeBegin
 		#Transform [-0.121921 0.000000 0.000000 0.000000 0.000000 0.391853 0.000000 0.000000 -0.000000 0.000000 -0.391853 0.000000 -2.000000 0.000000 3.008142 1.000000 ]
-		AreaLightSource "aaportal" "rgb L" [ 20.0 20.0 20.0 ]
-
+		AreaLightSource "portal" "rgb L" [ 20.0 20.0 20.0 ]
         "string strategy" "projection"
-        "bool useFrustum" "true"
 
-        "float hiX" -1.51568
-        "float hiY" 0.484324
-        "float loX" -2.48432
-        "float loY" -0.484325
-        "float portalZ" 2.79644
-        "normal portalNormal" [0, 0, -1]
-
+        "string portalData" "(AA -2.48432 -0.48432 -1.5156 0.48432 2.79 -)"
 
         Shape "aaplane"
         "float loX" -2.26887
@@ -137,7 +129,7 @@ WorldBegin
         "float z" 3.00814
         "normal n" [0, 0, -1]
 	AttributeEnd
-	
+
 
 	AttributeBegin
 		Transform [-0.121921 0.000000 0.000000 0.000000 0.000000 0.391853 0.000000 0.000000 -0.000000 0.000000 -0.391853 0.000000 -2.000000 0.000000 3.008142 1.000000 ]

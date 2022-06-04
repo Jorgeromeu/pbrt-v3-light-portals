@@ -6,7 +6,6 @@
 #define PBRT_V3_PLANE_H
 
 #include "shape.h"
-#include "portal.h"
 
 namespace pbrt {
 
@@ -44,12 +43,6 @@ public:
     Interaction Sample(const Point2f &u, Float *pdf) const;
 
     Float Pdf(const Interaction &) const { return 1 / Area(); }
-
-    void SampleProjection(const Point3f& ref,
-                          const Portal& portal,
-                          const Point2f& u,
-                          Vector3f* wi,
-                          Float* pdf);
 
     // portal data
     const Float loX;
