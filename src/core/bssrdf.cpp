@@ -248,7 +248,7 @@ Spectrum SeparableBSSRDF::Sample_Sp(const Scene &scene, Float u1,
                                     const Point2f &u2, MemoryArena &arena,
                                     SurfaceInteraction *pi, Float *pdf) const {
     ProfilePhase pp(Prof::BSSRDFEvaluation);
-    // Choose projection axis for BSSRDF sampling
+    // Choose projection ax for BSSRDF sampling
     Vector3f vx, vy, vz;
     if (u1 < .5f) {
         vx = ss;
@@ -335,7 +335,7 @@ Float SeparableBSSRDF::Pdf_Sp(const SurfaceInteraction &pi) const {
     Vector3f dLocal(Dot(ss, d), Dot(ts, d), Dot(ns, d));
     Normal3f nLocal(Dot(ss, pi.n), Dot(ts, pi.n), Dot(ns, pi.n));
 
-    // Compute BSSRDF profile radius under projection along each axis
+    // Compute BSSRDF profile radius under projection along each ax
     Float rProj[3] = {std::sqrt(dLocal.y * dLocal.y + dLocal.z * dLocal.z),
                       std::sqrt(dLocal.z * dLocal.z + dLocal.x * dLocal.x),
                       std::sqrt(dLocal.x * dLocal.x + dLocal.y * dLocal.y)};

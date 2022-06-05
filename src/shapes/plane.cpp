@@ -3,16 +3,14 @@
 
 namespace pbrt {
 
-// bounds
 Bounds3f AAPlane::ObjectBound() const {
-    const Point3f &pLo = Point3f(loX, loY, z-0.01);
-    const Point3f &pHi = Point3f(hiX, hiY, z+0.01);
-    return {(*WorldToObject)(pLo), (*WorldToObject)(pHi) };
+    return { (*WorldToObject)(lo), (*WorldToObject)(hi) };
 }
 
 
 Float AAPlane::Area() const {
-    return (hiY - loY) * (hiX - loX);
+    Float area =  (hi[ax0] - lo[ax0]) * (hi[ax1] - lo[ax1]);
+    return area;
 }
 
 bool AAPlane::Intersect(const Ray &ray,
@@ -20,20 +18,20 @@ bool AAPlane::Intersect(const Ray &ray,
                         bool testAlphaTexture) const {
 
     // ray-aa-plane intersection
-    float t = (z - ray.o.z) / ray.d.z;
+    float t = (lo[ax] - ray.o[ax]) / ray.d[ax];
     Point3f pHit = ray.o + t * ray.d;
 
-    if (pHit.x > loX &&
-        pHit.x < hiX &&
-        pHit.y > loY &&
-        pHit.y < hiY &&
+    if (pHit[ax0] > lo[ax0] &&
+        pHit[ax0] < hi[ax0] &&
+        pHit[ax1] > lo[ax1] &&
+        pHit[ax1] < hi[ax1] &&
         t < ray.tMax &&
         t > 0) {
 
         Vector3f error = Vector3f(0.01, 0.01, 0.01);
 
-        Float u = (pHit.x - loX) / (hiX - loX);
-        Float v = (pHit.y - loY) / (hiY - loY);
+        Float u = (pHit[ax0] - lo[ax0]) / (hi[ax0] - lo[ax0]);
+        Float v = (pHit[ax1] - lo[ax1]) / (hi[ax1] - lo[ax1]);
         Point2f uv = Point2f(u, v);
 
         Vector3f dpdu = Vector3f(-1, 0, 0);
@@ -55,11 +53,12 @@ bool AAPlane::Intersect(const Ray &ray,
 
 Interaction AAPlane::Sample(const Point2f &u, Float *pdf) const {
 
-    Float randX = loX + (hiX - loX) * u.x;
-    Float randY = loY + (hiY - loY) * u.y;
-
     Interaction it;
-    it.p = Point3f(randX, randY, z);
+    it.p = Point3f(0, 0, 0);
+    it.p[ax] = lo[ax];
+    it.p[ax0] = lo[ax0] + (hi[ax0] - lo[ax0]) * u.x;
+    it.p[ax1] = lo[ax1] + (hi[ax1] - lo[ax1]) * u.y;
+
     it.n = n;
     it.pError = Vector3f(0.1, 0.1, 0.1);
 
@@ -72,14 +71,12 @@ std::shared_ptr<Shape> CreateAAPlaneShape(
         const ParamSet &params) {
 
     // find geometry of portal
-    Float loY = params.FindOneFloat("loY", 0);
-    Float hiY = params.FindOneFloat("hiY", 0);
-    Float loX = params.FindOneFloat("loX", 0);
-    Float hiX = params.FindOneFloat("hiX", 0);
-    Float z = params.FindOneFloat("z", 0);
+    Point3f lo = params.FindOnePoint3f("lo", Point3f(0, 0, 0));
+    Point3f hi = params.FindOnePoint3f("hi", Point3f(0, 0, 0));
+    int ax = params.FindOneInt("axis", 2);
     Normal3f n = params.FindOneNormal3f("n", Normal3f(1, 0, 0));
 
-    return std::make_shared<AAPlane>(o2w, w2o, reverseOrientation, loY, hiY, loX, hiX, z, n);
+    return std::make_shared<AAPlane>(o2w, w2o, reverseOrientation, lo, hi, ax, n);
 }
 
 }

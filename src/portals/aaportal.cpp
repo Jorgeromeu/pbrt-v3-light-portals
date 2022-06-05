@@ -21,10 +21,12 @@ AAPortal::AAPortal(const Float loY, const Float hiY,
         area(((hiX - loX) * (hiY - loY))) {
 
     // Calculate viewing frustum
-    Point3f l0 = Point3f(light.loX, light.loY, light.z);
-    Point3f l1 = Point3f(light.loX, light.hiY, light.z);
-    Point3f l2 = Point3f(light.hiX, light.loY, light.z);
-    Point3f l3 = Point3f(light.hiX, light.hiY, light.z);
+    // TODO MAKE AGNOSTIC!!
+    Point3f l0 = light.lo;
+    Point3f l1 = Point3f(light.lo.x, light.hi.y, light.lo.z);
+    Point3f l2 = Point3f(light.hi.x, light.lo.x, light.lo.z);
+    Point3f l3 = light.hi;
+
 
     Point3f p0 = Point3f(loX, loY, z);
     Point3f p1 = Point3f(loX, hiY, z);
@@ -83,7 +85,7 @@ void AAPortal::SamplePortal(const Interaction &ref,
 
 Float AAPortal::Pdf_Portal(const Interaction &ref, const Vector3f &wi) const {
 
-    // axis aligned across z axis, plane intersection
+    // ax aligned across z ax, plane intersection
     Ray r = ref.SpawnRay(wi);
 
     if (r.d.z == 0) return 0;
@@ -122,22 +124,20 @@ void AAPortal::SampleProj(const Interaction &ref, const Point2f &u,
 
     // TODO make efficient :)
     // can make it faster by only doing math w x and y, not Z
-    Point3f lightLo = Point3f(light.loX, light.loY, light.z);
-    Point3f lightHi = Point3f(light.hiX, light.hiY, light.z);
 
-    auto dLo = Normalize(ref.p - lightLo);
-    auto dHi = Normalize(ref.p - lightHi);
+    auto dLo = Normalize(ref.p - light.lo);
+    auto dHi = Normalize(ref.p - light.hi);
 
     if (dLo.z == 0 || dHi.z == 0) {
         *pdf = 0;
         return;
     }
 
-    Float tLo = (z - lightLo.z) / dLo.z;
-    Float tHi = (z - lightHi.z) / dHi.z;
+    Float tLo = (z - light.lo.z) / dLo.z;
+    Float tHi = (z - light.hi.z) / dHi.z;
 
-    Point3f projLo = lightLo + dLo * tLo;
-    Point3f projHi = lightHi + dHi * tHi;
+    Point3f projLo = light.lo + dLo * tLo;
+    Point3f projHi = light.hi + dHi * tHi;
 
     // compute intersection
     Point3f isectHi = Max(Point3f(loX, loY, z), projLo);

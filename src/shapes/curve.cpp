@@ -153,7 +153,7 @@ bool Curve::Intersect(const Ray &r, Float *tHit, SurfaceInteraction *isect,
 
     // Be careful to set the "up" direction passed to LookAt() to equal the
     // vector from the first to the last control points.  In turn, this
-    // helps orient the curve to be roughly parallel to the x axis in the
+    // helps orient the curve to be roughly parallel to the x ax in the
     // ray coordinate system.
     //
     // In turn (especially for curves that are approaching stright lines),

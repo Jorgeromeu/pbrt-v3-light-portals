@@ -4,10 +4,11 @@ Accelerator "bvh"
 "string splitmethod" "sah"
 "integer maxnodeprims" [4]
 Sampler "halton"
-"integer pixelsamples" [40]
+"integer pixelsamples" [5]
 "bool samplepixelcenter" "false"
-Integrator "path"
-"integer maxdepth" [10]
+Integrator "directlighting"
+# Integrator "path"
+"integer maxdepth" [100]
 Scale -1 1 1 #avoid the 'flipped image' bug..
 LookAt	15.585251808166504 0.0 4.767856121063232
 	14.58536434173584 -0.014993300661444664 4.767856121063232
@@ -16,13 +17,6 @@ LookAt	15.585251808166504 0.0 4.767856121063232
 Camera "perspective"
 "float fov" [39.597755335771296]
 WorldBegin
-
-	AttributeBegin
-		Translate	1.0120168600501905e-15 -0.047724805772304535 7.325094223022461
-		LightSource "point"
-        "rgb I" [5.0 5.0 5.0]
-	AttributeEnd
-	
 
 	AttributeBegin
 		Transform [-3.909360 0.000000 0.000000 0.000000 0.000000 -5.084632 0.000000 0.000000 0.000000 0.000000 -9.719885 0.000000 0.000000 0.000000 0.000000 1.000000 ]
@@ -75,6 +69,19 @@ WorldBegin
 	
 
 	AttributeBegin
+		AreaLightSource "diffuse" "rgb L" [ 10.0 10.0 10.0 ]
+		# "string strategy" "light"
+	    # "string portalData" "((AA -1.2877 -1.26043 1.2877 1.26043 6.11473 -) (AA -0.793266 -0.776447 0.776447 0.776447 8.32176 +))"
+		"bool twosided" "true"
+        Shape "aaplane"
+        "point lo" [-0.865304, -0.865304, 6.91997]
+        "point hi" [0.865304, 0.865304, 6.91997]
+        "normal n" [0, 0, -1]
+        "integer axis" 2
+	AttributeEnd
+
+
+	AttributeBegin
 		Transform [1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.865869 0.000000 0.000000 0.000000 6.415442 1.000000 ]
 		Material "matte"		
 		"float sigma" [0.0]		
@@ -85,16 +92,24 @@ WorldBegin
 
 	AttributeBegin
 		Transform [1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.405973 1.000000 ]
-		Material "mirror"		
-		"color Kr" [ 1.0 1.0 1.0]		
+		Material "metal"		
+		"color eta" [ 0.800000011920929 0.800000011920929 0.800000011920929]		
+		"color k" [ 0.800000011920929 0.800000011920929 0.800000011920929]		
+		"float roughness" [0.10000000149011612]		
+		"float uroughness" [0.0]		
+		"float vroughness" [0.0]		
 		Shape "plymesh" "string filename" ["meshes/00001/Leg_mat0.ply"]
 	AttributeEnd
 	
 
 	AttributeBegin
-		Transform [0.752835 0.000000 0.000000 0.000000 0.000000 0.752835 0.000000 0.000000 0.000000 0.000000 0.745438 0.000000 0.000000 0.000000 0.117932 1.000000 ]
-		Material "mirror"		
-		"color Kr" [ 1.0 1.0 1.0]		
+		Transform [0.752835 0.000000 0.000000 0.000000 0.000000 0.752835 0.000000 0.000000 0.000000 0.000000 0.636970 0.000000 0.000000 0.000000 0.143390 1.000000 ]
+		Material "metal"		
+		"color eta" [ 0.800000011920929 0.800000011920929 0.800000011920929]		
+		"color k" [ 0.800000011920929 0.800000011920929 0.800000011920929]		
+		"float roughness" [0.10000000149011612]		
+		"float uroughness" [0.0]		
+		"float vroughness" [0.0]		
 		Shape "plymesh" "string filename" ["meshes/00001/Base_mat0.ply"]
 	AttributeEnd
 	

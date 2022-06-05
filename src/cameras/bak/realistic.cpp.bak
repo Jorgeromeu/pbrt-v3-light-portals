@@ -296,7 +296,7 @@ void RealisticCamera::DrawLensSystem() const {
 
     // 24mm height for 35mm film
     printf("Line[{{0, -.012}, {0, .012}}], ");
-    // optical axis
+    // optical ax
     printf("Line[{{0, 0}, {%f, 0}}] ", 1.2f * sumz);
 }
 
@@ -357,7 +357,7 @@ void RealisticCamera::DrawRayPathFromFilm(const Ray &r, bool arrow,
         printf("%s[{{%f, %f}, {%f, %f}}]", arrow ? "Arrow" : "Line", ray.o.z,
                ray.o.x, ray(ta).z, ray(ta).x);
 
-        // overdraw the optical axis if needed...
+        // overdraw the optical ax if needed...
         if (toOpticalIntercept)
             printf(", Line[{{%f, 0}, {%f, 0}}]", ray.o.z, ray(ta).z * 1.05f);
     }
@@ -436,7 +436,7 @@ void RealisticCamera::ComputeCardinalPoints(const Ray &rIn, const Ray &rOut,
 
 void RealisticCamera::ComputeThickLensApproximation(Float pz[2],
                                                     Float fz[2]) const {
-    // Find height $x$ from optical axis for parallel rays
+    // Find height $x$ from optical ax for parallel rays
     Float x = .001 * film->diagonal;
 
     // Compute cardinal points for film side of lens system
@@ -523,7 +523,7 @@ Float RealisticCamera::FocusDistance(Float filmDistance) {
         return Infinity;
     }
 
-    // Compute distance _zFocus_ where ray intersects the principal axis
+    // Compute distance _zFocus_ where ray intersects the principal ax
     Float tFocus = -ray.o.x / ray.d.x;
     Float zFocus = ray(tFocus).z;
     if (zFocus < 0) zFocus = Infinity;
@@ -623,7 +623,7 @@ Point3f RealisticCamera::SampleExitPupil(const Point2f &pFilm,
     // Generate sample point inside exit pupil bound
     Point2f pLens = pupilBounds.Lerp(lensSample);
 
-    // Return sample point rotated by angle of _pFilm_ with $+x$ axis
+    // Return sample point rotated by angle of _pFilm_ with $+x$ ax
     Float sinTheta = (rFilm != 0) ? pFilm.y / rFilm : 0;
     Float cosTheta = (rFilm != 0) ? pFilm.x / rFilm : 1;
     return Point3f(cosTheta * pLens.x - sinTheta * pLens.y,

@@ -51,7 +51,7 @@ convert options:
     --despike <v>      For any pixels with a luminance value greater than <v>,
                        replace the pixel with the median of the 3x3 neighboring
                        pixels. Default: infinity (i.e., disabled).
-    --flipy            Flip the image along the y axis
+    --flipy            Flip the image along the y ax
     --maxluminance <n> Luminance value mapped to white by tonemapping.
                        Default: 1
     --preservecolors   By default, out-of-gammut colors have each component
