@@ -1,4 +1,4 @@
-#include "portal_light.h"
+#include "portal_arealight.h"
 #include "stats.h"
 #include "paramset.h"
 #include "portals/aaportal.h"
@@ -9,22 +9,22 @@
 
 namespace pbrt {
 
-PortalLight::PortalLight(const Transform &LightToWorld,
-                         const MediumInterface &mediumInterface, const Spectrum &Le,
-                         int nSamples,
-                         const std::shared_ptr<AAPlane> &light,
-                         const AAPortal &portal,
-                         const PortalStrategy strategy,
-                         bool twoSided)
+PortalArealight::PortalArealight(const Transform &LightToWorld,
+                                 const MediumInterface &mediumInterface, const Spectrum &Le,
+                                 int nSamples,
+                                 const std::shared_ptr<AAPlane> &light,
+                                 const AAPortal &portal,
+                                 const PortalStrategy strategy,
+                                 bool twoSided)
         : DiffuseAreaLight(LightToWorld, mediumInterface, Le, nSamples, light, twoSided),
           portal(portal),
           shape(light),
           strat(strategy) {
 }
 
-Spectrum PortalLight::EstimateDirect(const Interaction &it,
-                                     const Point2f &u1, const Point2f &u2,
-                                     const Scene &scene, bool specular) const {
+Spectrum PortalArealight::EstimateDirect(const Interaction &it,
+                                         const Point2f &u1, const Point2f &u2,
+                                         const Scene &scene, bool specular) const {
 
     if (!portal.InFront(it.p)) {
         return EstimateDirectLight(it, u1, u2, scene, specular);
@@ -51,9 +51,9 @@ Spectrum PortalLight::EstimateDirect(const Interaction &it,
 
 }
 
-Spectrum PortalLight::EstimateDirectLight(const Interaction &it,
-                                          const Point2f &u1, const Point2f &u2,
-                                          const Scene &scene, bool specular) const {
+Spectrum PortalArealight::EstimateDirectLight(const Interaction &it,
+                                              const Point2f &u1, const Point2f &u2,
+                                              const Scene &scene, bool specular) const {
 
     // cast reference point to surface interaction
     const auto &ref = (const SurfaceInteraction &)it;
@@ -92,9 +92,9 @@ Spectrum PortalLight::EstimateDirectLight(const Interaction &it,
 }
 
 
-Spectrum PortalLight::EstimateDirectPortal(const Interaction &it,
-                                           const Point2f &u1, const Point2f &u2,
-                                           const Scene &scene, bool specular) const {
+Spectrum PortalArealight::EstimateDirectPortal(const Interaction &it,
+                                               const Point2f &u1, const Point2f &u2,
+                                               const Scene &scene, bool specular) const {
 
 
     // cast reference point to surface interaction
@@ -138,9 +138,9 @@ Spectrum PortalLight::EstimateDirectPortal(const Interaction &it,
     return Ld;
 }
 
-Spectrum PortalLight::EstimateDirectProj(const Interaction &it,
-                                         const Point2f &u1, const Point2f &u2,
-                                         const Scene &scene, bool specular) const {
+Spectrum PortalArealight::EstimateDirectProj(const Interaction &it,
+                                             const Point2f &u1, const Point2f &u2,
+                                             const Scene &scene, bool specular) const {
 
     // cast reference point to surface interaction
     const auto &ref = (const SurfaceInteraction &)it;
@@ -178,12 +178,12 @@ Spectrum PortalLight::EstimateDirectProj(const Interaction &it,
     return Ld;
 }
 
-void PortalLight::Preprocess(const Scene &scene) {
+void PortalArealight::Preprocess(const Scene &scene) {
     Light::Preprocess(scene);
 }
 
 
-std::shared_ptr<PortalLight> CreateAAPortal(
+std::shared_ptr<PortalArealight> CreateAAPortal(
         const Transform &light2world,
         const Medium *medium,
         const ParamSet &paramSet, const std::shared_ptr<AAPlane> &shape) {
@@ -229,8 +229,8 @@ std::shared_ptr<PortalLight> CreateAAPortal(
     if (PbrtOptions.quickRender) nSamples = std::max(1, nSamples / 4);
 
 
-    return std::make_shared<PortalLight>(light2world, medium, L * sc,
-                                         nSamples, shape, *portal, strategy, twoSided);
+    return std::make_shared<PortalArealight>(light2world, medium, L * sc,
+                                             nSamples, shape, *portal, strategy, twoSided);
 }
 
 

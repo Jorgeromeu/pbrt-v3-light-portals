@@ -64,8 +64,8 @@ class PointLight : public Light {
     void Pdf_Le(const Ray &, const Normal3f &, Float *pdfPos,
                 Float *pdfDir) const;
 
-  private:
-    // PointLight Private Data
+protected:
+    // PointLight Protected Data
     const Point3f pLight;
     const Spectrum I;
 };

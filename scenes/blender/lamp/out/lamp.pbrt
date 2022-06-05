@@ -1,0 +1,102 @@
+Film "image" "integer xresolution" [500] "integer yresolution" [500] "string filename" "output00001.exr"
+PixelFilter "box" "float xwidth" [0.5] "float ywidth" [0.5] 
+Accelerator "bvh" 
+"string splitmethod" "sah"
+"integer maxnodeprims" [4]
+Sampler "halton"
+"integer pixelsamples" [40]
+"bool samplepixelcenter" "false"
+Integrator "path"
+"integer maxdepth" [10]
+Scale -1 1 1 #avoid the 'flipped image' bug..
+LookAt	15.585251808166504 0.0 4.767856121063232
+	14.58536434173584 -0.014993300661444664 4.767856121063232
+	-1.5801693109551707e-07 -3.2824743811943335e-07 1.0
+
+Camera "perspective"
+"float fov" [39.597755335771296]
+WorldBegin
+
+	AttributeBegin
+		Translate	1.0120168600501905e-15 -0.047724805772304535 7.325094223022461
+		LightSource "point"
+        "rgb I" [5.0 5.0 5.0]
+	AttributeEnd
+	
+
+	AttributeBegin
+		Transform [-3.909360 0.000000 0.000000 0.000000 0.000000 -5.084632 0.000000 0.000000 0.000000 0.000000 -9.719885 0.000000 0.000000 0.000000 0.000000 1.000000 ]
+		Material "matte"		
+		"float sigma" [0.0]		
+		"color Kd" [ 0.8000000715255737 0.10962346941232681 0.06652108579874039]		
+		Shape "trianglemesh"
+		"point P" [
+		1.0 -1.0 0.0 1.0 1.0 0.0 1.0 1.0 -1.0512773990631104 1.0 -1.0 0.0 1.0 1.0 -1.0512773990631104 1.0 -1.0 -1.0512773990631104 1.0057735443115234 -1.0057735443115234 0.005773502867668867 1.0057735443115234 -1.0057735443115234 -1.0570509433746338 1.0057735443115234 1.0057735443115234 -1.0570509433746338 1.0057735443115234 -1.0057735443115234 0.005773502867668867 1.0057735443115234 1.0057735443115234 -1.0570509433746338 1.0057735443115234 1.0057735443115234 0.005773502867668867		
+		]
+		"normal N" [
+		-1.0 0.0 0.0 -1.0 0.0 0.0 -1.0 0.0 0.0 -1.0 0.0 0.0 -1.0 0.0 0.0 -1.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0		
+		]
+		"float st" [
+		1.0 0.0 
+		1.0 1.0 
+		1.0 1.0 
+		1.0 0.0 
+		1.0 1.0 
+		1.0 0.0 
+		1.0 0.0 
+		1.0 0.0 
+		1.0 1.0 
+		1.0 0.0 
+		1.0 1.0 
+		1.0 1.0 
+		]
+		"integer indices" [
+		0 1 2 3 4 5 6 7 8 9 10 11 
+		]
+	AttributeEnd
+	
+
+	AttributeBegin
+		Transform [-3.909360 0.000000 0.000000 0.000000 0.000000 -5.084632 0.000000 0.000000 0.000000 0.000000 -9.719885 0.000000 0.000000 0.000000 0.000000 1.000000 ]
+		Material "matte"		
+		"float sigma" [0.0]		
+		"color Kd" [ 0.800000011920929 0.800000011920929 0.800000011920929]		
+		Shape "plymesh" "string filename" ["meshes/00001/Room_mat1.ply"]
+	AttributeEnd
+	
+
+	AttributeBegin
+		Transform [-3.909360 0.000000 0.000000 0.000000 0.000000 -5.084632 0.000000 0.000000 0.000000 0.000000 -9.719885 0.000000 0.000000 0.000000 0.000000 1.000000 ]
+		Material "matte"		
+		"float sigma" [0.0]		
+		"color Kd" [ 0.06725190579891205 0.8000000715255737 0.17837531864643097]		
+		Shape "plymesh" "string filename" ["meshes/00001/Room_mat2.ply"]
+	AttributeEnd
+	
+
+	AttributeBegin
+		Transform [1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.865869 0.000000 0.000000 0.000000 6.415442 1.000000 ]
+		Material "matte"		
+		"float sigma" [0.0]		
+		"color Kd" [ 0.800000011920929 0.800000011920929 0.800000011920929]		
+		Shape "plymesh" "string filename" ["meshes/00001/Lampshade_mat0.ply"]
+	AttributeEnd
+	
+
+	AttributeBegin
+		Transform [1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.405973 1.000000 ]
+		Material "mirror"		
+		"color Kr" [ 1.0 1.0 1.0]		
+		Shape "plymesh" "string filename" ["meshes/00001/Leg_mat0.ply"]
+	AttributeEnd
+	
+
+	AttributeBegin
+		Transform [0.752835 0.000000 0.000000 0.000000 0.000000 0.752835 0.000000 0.000000 0.000000 0.000000 0.745438 0.000000 0.000000 0.000000 0.117932 1.000000 ]
+		Material "mirror"		
+		"color Kr" [ 1.0 1.0 1.0]		
+		Shape "plymesh" "string filename" ["meshes/00001/Base_mat0.ply"]
+	AttributeEnd
+	
+
+WorldEnd

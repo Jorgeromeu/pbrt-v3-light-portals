@@ -45,7 +45,7 @@
 #include "stats.h"
 #include "portals/aaportal.h"
 // #include "lights/portal_light.h"
- #include "lights/portal_light.h"
+ #include "lights/portal_arealight.h"
 
 namespace pbrt {
 
@@ -127,7 +127,7 @@ Spectrum EstimateDirect(const Interaction &it, const Point2f &uScattering,
                         MemoryArena &arena, bool handleMedia, bool specular) {
 
 
-    auto portalLight = std::dynamic_pointer_cast<PortalLight>(light);
+    auto portalLight = std::dynamic_pointer_cast<PortalArealight>(light);
     if (portalLight != nullptr) {
         return portalLight->EstimateDirect(it, uScattering, uLight, scene, specular);
     }
@@ -266,7 +266,7 @@ Spectrum EstimateDirect(const Interaction &it, const Point2f &uScattering,
 //                            MemoryArena &arena, bool handleMedia, bool specular) {
 //
 //    // cast to portal light
-//    auto portalLight = dynamic_cast<PortalLight&>(light);
+//    auto portalLight = dynamic_cast<PortalArealight&>(light);
 //
 //    // cast reference point to surface interaction
 //    const auto &ref = (const SurfaceInteraction &)it;
@@ -353,7 +353,7 @@ Spectrum EstimateDirect(const Interaction &it, const Point2f &uScattering,
 //
 //
 //    // cast to portal light
-//    auto portalLight = dynamic_cast<PortalLight&>(light);
+//    auto portalLight = dynamic_cast<PortalArealight&>(light);
 //
 //    // cast reference point to surface interaction
 //    const auto &ref = (const SurfaceInteraction &)it;
@@ -454,7 +454,7 @@ Spectrum EstimateDirectLight(const Interaction &it, const Point2f &uScattering,
 //                              MemoryArena &arena, bool handleMedia, bool specular) {
 //
 //    // cast to portal light
-//    auto portalLight = dynamic_cast<PortalLight&>(light);
+//    auto portalLight = dynamic_cast<PortalArealight&>(light);
 //
 //    // cast reference point to surface interaction
 //    const auto &ref = (const SurfaceInteraction &)it;

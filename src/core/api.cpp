@@ -64,7 +64,7 @@
 #include "integrators/volpath.h"
 #include "integrators/whitted.h"
 #include "lights/diffuse.h"
-#include "lights/portal_light.h"
+#include "lights/portal_arealight.h"
 #include "lights/distant.h"
 #include "lights/goniometric.h"
 #include "lights/infinite.h"
