@@ -117,7 +117,7 @@ WorldBegin
 	AttributeBegin
 		#Transform [-0.121921 0.000000 0.000000 0.000000 0.000000 0.391853 0.000000 0.000000 -0.000000 0.000000 -0.391853 0.000000 -2.000000 0.000000 3.008142 1.000000 ]
 		AreaLightSource "portal" "rgb L" [ 20.0 20.0 20.0 ]
-        "string strategy" "projection"
+        "string strategy" "portal"
 
         "string portalData" "(AA -2.48432 -0.48432 -1.5156 0.48432 2.79 -)"
 

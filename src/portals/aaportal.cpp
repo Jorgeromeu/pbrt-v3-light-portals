@@ -3,6 +3,7 @@
 #include "shapes/plane.h"
 #include "geometry.h"
 #include "interaction.h"
+#include "ext/sexpresso.hpp"
 
 AAPortal::AAPortal(const Float loY, const Float hiY,
                    const Float loX, const Float hiX, const Float z,
@@ -37,27 +38,33 @@ AAPortal::AAPortal(const Float loY, const Float hiY,
     auto fd0 = Normalize(p0 - l3);
 
     // frustum directions
-    LOG(INFO) << "DBG DIR-WHITE:" << p0 << ";" << fd0;
-    LOG(INFO) << "DBG DIR-BLUE:" << p1 << ";" << fd1;
-    LOG(INFO) << "DBG DIR-GREEN:" << p2 << ";" << fd2;
-    LOG(INFO) << "DBG DIR-RED:" << p3 << ";" << fd3;
+//    LOG(INFO) << "DBG DIR-WHITE:" << p0 << ";" << fd0;
+//    LOG(INFO) << "DBG DIR-BLUE:" << p1 << ";" << fd1;
+//    LOG(INFO) << "DBG DIR-GREEN:" << p2 << ";" << fd2;
+//    LOG(INFO) << "DBG DIR-RED:" << p3 << ";" << fd3;
 
     // frustum plane normals
-    fn0 = Normal3f(Cross(fd1, fd0));
-    fn1 = Normal3f(Cross(fd3, fd1));
-    fn2 = Normal3f(Cross(fd2, fd3));
-    fn3 = Normal3f(Cross(fd0, fd2));
+    if (!greater) {
+        fn0 = Normal3f(Cross(fd1, fd0));
+        fn1 = Normal3f(Cross(fd3, fd1));
+        fn2 = Normal3f(Cross(fd2, fd3));
+        fn3 = Normal3f(Cross(fd0, fd2));
+    } else {
+        fn0 = Normal3f(Cross(fd0, fd1));
+        fn1 = Normal3f(Cross(fd1, fd3));
+        fn2 = Normal3f(Cross(fd3, fd2));
+        fn3 = Normal3f(Cross(fd2, fd0));
+    }
 
     // frustum plane points
     fp0 = (p0 + p1) / 2;
     fp1 = (p1 + p3) / 2;
     fp2 = (p2 + p3) / 2;
     fp3 = (p0 + p2) / 2;
-    LOG(INFO) << "DBG DIR-CYAN:" << fp0 << ";" << fn0;
-    LOG(INFO) << "DBG DIR-CYAN:" << fp1 << ";" << fn1;
-    LOG(INFO) << "DBG DIR-CYAN:" << fp2 << ";" << fn2;
-    LOG(INFO) << "DBG DIR-CYAN:" << fp3 << ";" << fn3;
-
+//    LOG(INFO) << "DBG DIR-CYAN:" << fp0 << ";" << fn0;
+//    LOG(INFO) << "DBG DIR-CYAN:" << fp1 << ";" << fn1;
+//    LOG(INFO) << "DBG DIR-CYAN:" << fp2 << ";" << fn2;
+//    LOG(INFO) << "DBG DIR-CYAN:" << fp3 << ";" << fn3;
 }
 
 // AAPortal area sapling
@@ -115,22 +122,22 @@ void AAPortal::SampleProj(const Interaction &ref, const Point2f &u,
 
     // TODO make efficient :)
     // can make it faster by only doing math w x and y, not Z
-    Point3f pLo = Point3f(light.loX, light.loY, z);
-    Point3f pHi = Point3f(light.hiX, light.hiY, z);
+    Point3f lightLo = Point3f(light.loX, light.loY, light.z);
+    Point3f lightHi = Point3f(light.hiX, light.hiY, light.z);
 
-    auto dLo = Normalize(ref.p - pLo);
-    auto dHi = Normalize(ref.p - pHi);
+    auto dLo = Normalize(ref.p - lightLo);
+    auto dHi = Normalize(ref.p - lightHi);
 
     if (dLo.z == 0 || dHi.z == 0) {
         *pdf = 0;
         return;
     }
 
-    Float tLo = (z - pLo.z) / dLo.z;
-    Float tHi = (z - pHi.z) / dHi.z;
+    Float tLo = (z - lightLo.z) / dLo.z;
+    Float tHi = (z - lightHi.z) / dHi.z;
 
-    Point3f projLo = pLo + dLo * tLo;
-    Point3f projHi = pHi + dHi * tHi;
+    Point3f projLo = lightLo + dLo * tLo;
+    Point3f projHi = lightHi + dHi * tHi;
 
     // compute intersection
     Point3f isectHi = Max(Point3f(loX, loY, z), projLo);
@@ -148,7 +155,6 @@ void AAPortal::SampleProj(const Interaction &ref, const Point2f &u,
     *wi = Normalize(sampled - ref.p);
     *pdf = DistanceSquared(ref.p, sampled) / (AbsDot(n, -*wi) * isectLenX * isectLenY);
 }
-
 Float AAPortal::Pdf_Proj(const Interaction &ref, const Vector3f &wi) const {
     // TODO implement for MIS
     return 0;

@@ -1,4 +1,6 @@
 #include "portal_arealight.h"
+
+#include <utility>
 #include "stats.h"
 #include "paramset.h"
 #include "portals/aaportal.h"
@@ -13,27 +15,43 @@ PortalArealight::PortalArealight(const Transform &LightToWorld,
                                  const MediumInterface &mediumInterface, const Spectrum &Le,
                                  int nSamples,
                                  const std::shared_ptr<AAPlane> &light,
-                                 const AAPortal &portal,
+                                 std::vector<AAPortal> portals,
                                  const PortalStrategy strategy,
                                  bool twoSided)
         : DiffuseAreaLight(LightToWorld, mediumInterface, Le, nSamples, light, twoSided),
-          portal(portal),
+          portals(std::move(portals)),
+          selectedPortal(0),
           shape(light),
           strat(strategy) {
 }
 
 Spectrum PortalArealight::EstimateDirect(const Interaction &it,
                                          const Point2f &u1, const Point2f &u2,
-                                         const Scene &scene, bool specular) const {
+                                         const Scene &scene, bool specular) {
 
-    if (!portal.InFront(it.p)) {
+    // choose a portal
+    for (int i=0; i<portals.size(); i++) {
+        if (portals[i].InFront(it.p))  {
+            selectedPortal = i;
+        }
+    }
+
+
+    if (!portals[selectedPortal].InFront(it.p)) {
+        // Float rgb[3] = {1, 0, 0};
+        // return RGBSpectrum::FromRGB(rgb);
         return EstimateDirectLight(it, u1, u2, scene, specular);
     }
 
     // if not in frustum, return black
-    if (!portal.InFrustum(it.p)) {
+    if (!portals[selectedPortal].InFrustum(it.p)) {
+        // Float rgb[3] = {0, 1, 0};
+        // return RGBSpectrum::FromRGB(rgb);
         return 0;
     }
+
+    // Float rgb[3] = {0, 0, 1};
+    // return RGBSpectrum::FromRGB(rgb);
 
     if (strat == PortalStrategy::SampleUniformPortal) {
         return EstimateDirectPortal(it, u1, u2, scene, specular);
@@ -109,12 +127,8 @@ Spectrum PortalArealight::EstimateDirectPortal(const Interaction &it,
 
     Spectrum Ld(0.f);
 
-    if (ref.p.z > portal.z) {
-        return EstimateDirectLight(it, u1, u2, scene, specular);
-    }
-
     // SAMPLE PORTAL
-    portal.SamplePortal(it, u1, &wi, &portalPdf);
+    portals[selectedPortal].SamplePortal(it, u1, &wi, &portalPdf);
 
     if (portalPdf > 0) {
 
@@ -154,7 +168,7 @@ Spectrum PortalArealight::EstimateDirectProj(const Interaction &it,
     Spectrum Ld(0.f);
 
     // SAMPLE PORTAL
-    portal.SampleProj(ref, u1, &wi, &projPdf);
+    portals[selectedPortal].SampleProj(ref, u1, &wi, &projPdf);
 
     if (projPdf > 0) {
 
@@ -182,7 +196,6 @@ void PortalArealight::Preprocess(const Scene &scene) {
     Light::Preprocess(scene);
 }
 
-
 std::shared_ptr<PortalArealight> CreateAAPortal(
         const Transform &light2world,
         const Medium *medium,
@@ -193,24 +206,30 @@ std::shared_ptr<PortalArealight> CreateAAPortal(
     int nSamples = paramSet.FindOneInt("samples", paramSet.FindOneInt("nsamples", 1));
     bool twoSided = paramSet.FindOneBool("twosided", false);
 
-
-    // replace with parsing the data
-
+    // parse portalData
     std::string portalData = paramSet.FindOneString("portalData", "");
-    auto parseTree = sexpresso::parse(portalData);
+    auto parseTree = sexpresso::parse(portalData).getChild(0);
+    std::vector<AAPortal> portals = {};
 
-    AAPortal* portal = nullptr;
-    auto type = parseTree.getChild(0).getChild(0).toString();
-    if (type == "AA") {
-        Float loX = std::stof(parseTree.getChild(0).getChild(1).toString());
-        Float loY = std::stof(parseTree.getChild(0).getChild(2).toString());
-        Float hiX = std::stof(parseTree.getChild(0).getChild(3).toString());
-        Float hiY = std::stof(parseTree.getChild(0).getChild(4).toString());
-        Float z = std::stof(parseTree.getChild(0).getChild(5).toString());
-        std::string orientation = parseTree.getChild(0).getChild(6).toString();
-        bool greater = orientation == "+";
-        portal = new AAPortal(loY, hiY, loX, hiX, z, greater, *shape);
+    for (int i=0; i<parseTree.childCount(); i++) {
+
+        auto portalSexpr = parseTree.getChild(i);
+        auto type = portalSexpr.getChild(0).toString();
+
+        if (type == "AA") {
+            Float loX = std::stof(portalSexpr.getChild(1).toString());
+            Float loY = std::stof(portalSexpr.getChild(2).toString());
+            Float hiX = std::stof(portalSexpr.getChild(3).toString());
+            Float hiY = std::stof(portalSexpr.getChild(4).toString());
+            Float z = std::stof(portalSexpr.getChild(5).toString());
+            std::string orientation = portalSexpr.getChild(6).toString();
+            bool greater = orientation == "+";
+
+            portals.emplace_back(loY, hiY, loX, hiX, z, greater, *shape);
+        }
     }
+
+
 
     PortalStrategy strategy;
     auto st = paramSet.FindOneString("strategy", "light");
@@ -225,12 +244,11 @@ std::shared_ptr<PortalArealight> CreateAAPortal(
     }
 
 
-
     if (PbrtOptions.quickRender) nSamples = std::max(1, nSamples / 4);
 
 
     return std::make_shared<PortalArealight>(light2world, medium, L * sc,
-                                             nSamples, shape, *portal, strategy, twoSided);
+                                             nSamples, shape, portals, strategy, twoSided);
 }
 
 

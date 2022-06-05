@@ -11,7 +11,7 @@ class PortalLight {
     // Portal Light interface
     virtual Spectrum EstimateDirect(const Interaction &it,
                                     const Point2f &u1, const Point2f &u2,
-                                    const Scene &scene, bool specular) const = 0;
+                                    const Scene &scene, bool specular) = 0;
 
 };
 

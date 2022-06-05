@@ -30,10 +30,10 @@ PointPortal::PointPortal(const Float loY, const Float hiY,
     auto fd0 = Normalize(p0 - pLight);
 
     // frustum directions
-    LOG(INFO) << "DBG DIR-WHITE:" << p0 << ";" << fd0;
-    LOG(INFO) << "DBG DIR-BLUE:" << p1 << ";" << fd1;
-    LOG(INFO) << "DBG DIR-GREEN:" << p2 << ";" << fd2;
-    LOG(INFO) << "DBG DIR-RED:" << p3 << ";" << fd3;
+//    LOG(INFO) << "DBG DIR-WHITE:" << p0 << ";" << fd0;
+//    LOG(INFO) << "DBG DIR-BLUE:" << p1 << ";" << fd1;
+//    LOG(INFO) << "DBG DIR-GREEN:" << p2 << ";" << fd2;
+//    LOG(INFO) << "DBG DIR-RED:" << p3 << ";" << fd3;
 
     // frustum plane normals
     fn0 = Normal3f(Cross(fd1, fd0));

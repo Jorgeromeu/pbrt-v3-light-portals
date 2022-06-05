@@ -20,7 +20,6 @@ public:
 
     bool InFront(const Point3f &p) const override;
 
-
     void SamplePortal(const Interaction &ref,
                       const Point2f &u,
                       Vector3f *wi,

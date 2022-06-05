@@ -4,10 +4,11 @@ Accelerator "bvh"
 "string splitmethod" "sah"
 "integer maxnodeprims" [4]
 Sampler "halton"
-"integer pixelsamples" [50]
+"integer pixelsamples" [20]
 "bool samplepixelcenter" "false"
 Integrator "directlighting"
-"integer maxdepth" [10]
+# Integrator "path"
+"integer maxdepth" [100]
 Scale -1 1 1 #avoid the 'flipped image' bug..
 LookAt	15.585251808166504 0.0 4.767856121063232
 	14.58536434173584 -0.014993300661444664 4.767856121063232
@@ -69,6 +70,8 @@ WorldBegin
 
 	AttributeBegin
 		AreaLightSource "diffuse" "rgb L" [ 10.0 10.0 10.0 ]
+		# "string strategy" "light"
+	    # "string portalData" "((AA -1.2877 -1.26043 1.2877 1.26043 6.11473 -) (AA -0.793266 -0.776447 0.776447 0.776447 8.32176 +))"
 		"bool twosided" "true"
         Shape "aaplane"
         "float loX" -0.865304

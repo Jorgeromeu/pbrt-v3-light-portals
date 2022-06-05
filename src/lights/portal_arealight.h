@@ -5,6 +5,7 @@
 #include "portals/portal_light.h"
 #include "portals/aaportal.h"
 #include "diffuse.h"
+#include "vector"
 
 namespace pbrt {
 
@@ -14,15 +15,16 @@ class PortalArealight : public DiffuseAreaLight, public PortalLight {
 
 public:
 
-    const AAPortal& portal;
+    const std::vector<AAPortal> portals;
     std::shared_ptr<AAPlane> shape;
     const PortalStrategy strat;
+    int selectedPortal;
 
     PortalArealight(const Transform &LightToWorld,
                     const MediumInterface &mediumInterface, const Spectrum &Le,
                     int nSamples,
                     const std::shared_ptr<AAPlane> &light,
-                    const AAPortal &portal,
+                    std::vector<AAPortal> portals,
                     const PortalStrategy strategy,
                     bool twoSided = false);
 
@@ -30,7 +32,7 @@ public:
 
     Spectrum EstimateDirect(const Interaction &it,
                             const Point2f &u1, const Point2f &u2,
-                            const Scene &scene, bool specular) const;
+                            const Scene &scene, bool specular) override;
 
 private:
     Spectrum EstimateDirectLight(const Interaction &it,
