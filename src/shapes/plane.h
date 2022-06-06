@@ -6,34 +6,30 @@
 #define PBRT_V3_PLANE_H
 
 #include "shape.h"
+#include "core/aa_plane.h"
 
 namespace pbrt {
 
-class AAPlane : public Shape {
+class AAPlaneShape : public Shape {
 
 public:
-    AAPlane(const Transform *ObjectToWorld, const Transform *WorldToObject,
-            bool reverseOrientation,
-            const Point3f &lo,
-            const Point3f &hi,
-            const int axis,
-            const Normal3f &normal)
+    AAPlaneShape(const Transform *ObjectToWorld, const Transform *WorldToObject,
+                 bool reverseOrientation,
+                 Point3f &lo,
+                 Point3f &hi,
+                 int axis,
+                 bool facingFw)
             : Shape(ObjectToWorld, WorldToObject, reverseOrientation),
-              lo(lo),
-              hi(hi),
-              ax(axis),
-              // other two axis depend on value of axis
-              ax0(axis == 0 ? 1 : 0),
-              ax1(axis == 0 ? 2 : axis == 1 ? 2 : 1),
-              n(normal) {}
+              geometry(AAPlane(lo, hi, axis, facingFw)) {
+    }
 
     // bounds
     Bounds3f ObjectBound() const override;
 
     // intersection
     bool Intersect(const Ray &ray, Float *tHit,
-                           SurfaceInteraction *isect,
-                           bool testAlphaTexture = true) const override;
+                   SurfaceInteraction *isect,
+                   bool testAlphaTexture = true) const override;
 
     Float Area() const override;
 
@@ -43,15 +39,7 @@ public:
 
     Float Pdf(const Interaction &) const override { return 1 / Area(); }
 
-    // portal data
-    const Point3f lo;
-    const Point3f hi;
-    const Normal3f n;
-
-    // axi
-    const int ax;
-    int ax0;
-    int ax1;
+    const AAPlane geometry;
 
 
 };

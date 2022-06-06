@@ -69,14 +69,14 @@ WorldBegin
 	
 
 	AttributeBegin
-		AreaLightSource "diffuse" "rgb L" [ 10.0 10.0 10.0 ]
-		# "string strategy" "light"
-	    # "string portalData" "((AA -1.2877 -1.26043 1.2877 1.26043 6.11473 -) (AA -0.793266 -0.776447 0.776447 0.776447 8.32176 +))"
+		AreaLightSource "portal" "rgb L" [ 10.0 10.0 10.0 ]
+		"string strategy" "light"
+	    "string portalData" "((AA -1.2877 -1.26043 6.11473 1.2877 1.26043 6.11473 2 -) (AA -0.793266 -0.776447 8.32176 0.776447 0.776447 8.32176 2 +))"
 		"bool twosided" "true"
         Shape "aaplane"
         "point lo" [-0.865304, -0.865304, 6.91997]
         "point hi" [0.865304, 0.865304, 6.91997]
-        "normal n" [0, 0, -1]
+        "bool facingFw" "true"
         "integer axis" 2
 	AttributeEnd
 

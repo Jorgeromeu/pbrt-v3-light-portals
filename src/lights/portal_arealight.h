@@ -16,14 +16,14 @@ class PortalArealight : public DiffuseAreaLight, public PortalLight {
 public:
 
     const std::vector<AAPortal> portals;
-    std::shared_ptr<AAPlane> shape;
+    std::shared_ptr<AAPlaneShape> shape;
     const PortalStrategy strat;
     int selectedPortal;
 
     PortalArealight(const Transform &LightToWorld,
                     const MediumInterface &mediumInterface, const Spectrum &Le,
                     int nSamples,
-                    const std::shared_ptr<AAPlane> &light,
+                    const std::shared_ptr<AAPlaneShape> &light,
                     std::vector<AAPortal> portals,
                     const PortalStrategy strategy,
                     bool twoSided = false);
@@ -53,7 +53,7 @@ private:
 std::shared_ptr<PortalArealight> CreateAAPortal(
         const Transform &light2world,
         const Medium *medium,
-        const ParamSet &paramSet, const std::shared_ptr<AAPlane> &shape);
+        const ParamSet &paramSet, const std::shared_ptr<AAPlaneShape> &shape);
 
 }
 

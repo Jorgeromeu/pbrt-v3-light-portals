@@ -775,7 +775,7 @@ std::shared_ptr<AreaLight> MakeAreaLight(const std::string &name,
         area = CreateDiffuseAreaLight(light2world, mediumInterface.outside,
                                       paramSet, shape);
     else if (name == "portal") {
-        auto aaplanePtr = std::dynamic_pointer_cast<AAPlane>(shape);
+        auto aaplanePtr = std::dynamic_pointer_cast<AAPlaneShape>(shape);
         area = CreateAAPortal(light2world, mediumInterface.outside, paramSet, aaplanePtr);
     }
     else
@@ -1439,8 +1439,6 @@ void pbrtShape(const std::string &name, const ParamSet &params) {
 
 void pbrtPortal(const std::string &name, const ParamSet &params) {
         VERIFY_WORLD("AAPortal");
-
-        std::cout << "lmaoooo" << std::endl;
 
         std::vector<std::shared_ptr<Primitive>> prims;
         std::vector<std::shared_ptr<AreaLight>> areaLights;

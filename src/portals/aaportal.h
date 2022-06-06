@@ -11,10 +11,8 @@ using namespace pbrt;
 class AAPortal : public Portal {
 public:
 
-    AAPortal(const Float loY, const Float hiY,
-             const Float loX, const Float hiX, const Float z,
-             bool greater,
-             AAPlane &light);
+    AAPortal(const Point3f& lo, const Point3f& hi, int axis, bool facingFw,
+             AAPlaneShape &lightShape);
 
     bool InFrustum(const Point3f &p) const override;
 
@@ -39,12 +37,7 @@ public:
     const AAPlane& light;
 
     // portal geometry
-    Float loY;
-    Float hiY;
-    Float loX;
-    Float hiX;
-    Float z;
-    bool greater;
+    const AAPlane portal;
 
     Normal3f n;
     Float area;

@@ -855,87 +855,58 @@ inline bool ClipAA(Point3f& v0, Point3f& v1, Point3f& v2,
 
     return false;
 }
-
-void Triangle::SampleProjectionFastClip(const Point3f &ref,
-                                        const AAPortal& portal,
-                                        const Point2f& u,
-                                        Point3f *sampled,
-                                        Float *pdf,
-                                        Vector3f *wi) {
-
-    // project triangle vertices
-    Point3f v0 = ProjectZ(ref, mesh->p[v[0]], portal.z);
-    Point3f v1 = ProjectZ(ref, mesh->p[v[1]], portal.z);
-    Point3f v2 = ProjectZ(ref, mesh->p[v[2]], portal.z);
-
-    // clip against each portal edge
-    bool included = FastClipAA(v0, v1, v2, u.x, portal.hiY, 1, true);
-
-    if (included) {
-        included = FastClipAA(v0, v1, v2, u.x, portal.loY, 1, false);
-    } else {
-        *pdf = 0;
-        return;
-    }
-
-    if (included) {
-        included &= FastClipAA(v0, v1, v2, u.x, portal.hiX, 0, true);
-    } else {
-        *pdf = 0;
-        return;
-    }
-
-    if (included) {
-        included &= FastClipAA(v0, v1, v2, u.x, portal.loX, 0, false);
-    } else {
-        *pdf = 0;
-        return;
-    }
-
-    Float area = 0.5 * Cross(v1 - v0, v2 - v0).Length();
-
-    // sample barycentric coords
-    Point2f b = UniformSampleTriangle(u);
-    Point3f sampledPoint = b[0] * v0 + b[1] * v1 + (1 - b[0] - b[1]) * v2;
-
-    if ((sampledPoint - ref).LengthSquared() == 0) {
-        *pdf = 0;
-        return;
-    }
-
-    *wi = Normalize(sampledPoint - ref);
-    *pdf = DistanceSquared(ref, sampledPoint) / (AbsDot(Vector3f(0, 0, -1), -*wi) * area);
-}
-
-
-/**
- * Compute the minimum cos(theta) to bother sampling the portal
- *
- * @param portal
- * @return the minimum cosine with which we consider sampling the portal
- */
-Float Triangle::MinSampleCosine(const AAPortal* portal) {
-
-    std::vector<Vector3f> dirs;
-    dirs.reserve(12);
-
-    // directions from each each vertex of the portal to each vertex of the triangle
-    for (int i=0; i<=2; i++) {
-        dirs.push_back(Normalize(mesh->p[v[i]] - Point3f(portal->loX, portal->loY, portal->z)));
-        dirs.push_back(Normalize(mesh->p[v[i]] - Point3f(portal->loX, portal->hiY, portal->z)));
-        dirs.push_back(Normalize(mesh->p[v[i]] - Point3f(portal->hiX, portal->loY, portal->z)));
-        dirs.push_back(Normalize(mesh->p[v[i]] - Point3f(portal->hiX, portal->hiY, portal->z)));
-    }
-
-    Float minCos = 1;
-    for (Vector3f dir : dirs) {
-        Float cos = Dot(-dir, portal->n);
-        if (cos < minCos) minCos = cos;
-    }
-
-    return minCos;
-
-}
+//
+//void Triangle::SampleProjectionFastClip(const Point3f &ref,
+//                                        const AAPortal& portal,
+//                                        const Point2f& u,
+//                                        Point3f *sampled,
+//                                        Float *pdf,
+//                                        Vector3f *wi) {
+//
+//    // project triangle vertices
+//    Point3f v0 = ProjectZ(ref, mesh->p[v[0]], portal.z);
+//    Point3f v1 = ProjectZ(ref, mesh->p[v[1]], portal.z);
+//    Point3f v2 = ProjectZ(ref, mesh->p[v[2]], portal.z);
+//
+//    // clip against each portal edge
+//    bool included = FastClipAA(v0, v1, v2, u.x, portal.hiY, 1, true);
+//
+//    if (included) {
+//        included = FastClipAA(v0, v1, v2, u.x, portal.loY, 1, false);
+//    } else {
+//        *pdf = 0;
+//        return;
+//    }
+//
+//    if (included) {
+//        included &= FastClipAA(v0, v1, v2, u.x, portal.hiX, 0, true);
+//    } else {
+//        *pdf = 0;
+//        return;
+//    }
+//
+//    if (included) {
+//        included &= FastClipAA(v0, v1, v2, u.x, portal.loX, 0, false);
+//    } else {
+//        *pdf = 0;
+//        return;
+//    }
+//
+//    Float area = 0.5 * Cross(v1 - v0, v2 - v0).Length();
+//
+//    // sample barycentric coords
+//    Point2f b = UniformSampleTriangle(u);
+//    Point3f sampledPoint = b[0] * v0 + b[1] * v1 + (1 - b[0] - b[1]) * v2;
+//
+//    if ((sampledPoint - ref).LengthSquared() == 0) {
+//        *pdf = 0;
+//        return;
+//    }
+//
+//    *wi = Normalize(sampledPoint - ref);
+//    *pdf = DistanceSquared(ref, sampledPoint) / (AbsDot(Vector3f(0, 0, -1), -*wi) * area);
+//}
+//
 
 std::vector<std::shared_ptr<Shape>> CreateTriangleMeshShape(
     const Transform *o2w, const Transform *w2o, bool reverseOrientation,

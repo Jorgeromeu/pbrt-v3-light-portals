@@ -1,68 +1,54 @@
 #include "shapes/plane.h"
 #include "paramset.h"
+#include "aa_plane.h"
 
 namespace pbrt {
 
-Bounds3f AAPlane::ObjectBound() const {
-    return { (*WorldToObject)(lo), (*WorldToObject)(hi) };
+Bounds3f AAPlaneShape::ObjectBound() const {
+    return { (*WorldToObject)(geometry.lo), (*WorldToObject)(geometry.hi) };
 }
 
 
-Float AAPlane::Area() const {
-    Float area =  (hi[ax0] - lo[ax0]) * (hi[ax1] - lo[ax1]);
-    return area;
+Float AAPlaneShape::Area() const {
+    return geometry.Area();
 }
 
-bool AAPlane::Intersect(const Ray &ray,
-                        Float *tHit, SurfaceInteraction* isect,
-                        bool testAlphaTexture) const {
+bool AAPlaneShape::Intersect(const Ray &ray,
+                             Float *tHit, SurfaceInteraction* isect,
+                             bool testAlphaTexture) const {
 
-    // ray-aa-plane intersection
-    float t = (lo[ax] - ray.o[ax]) / ray.d[ax];
-    Point3f pHit = ray.o + t * ray.d;
+    bool hit = geometry.Intersect(ray, tHit);
 
-    if (pHit[ax0] > lo[ax0] &&
-        pHit[ax0] < hi[ax0] &&
-        pHit[ax1] > lo[ax1] &&
-        pHit[ax1] < hi[ax1] &&
-        t < ray.tMax &&
-        t > 0) {
+    if (!hit) return false;
 
+    if (*tHit < ray.tMax) {
+        Point3f pHit = ray.o + ray.d * *tHit;
         Vector3f error = Vector3f(0.01, 0.01, 0.01);
 
-        Float u = (pHit[ax0] - lo[ax0]) / (hi[ax0] - lo[ax0]);
-        Float v = (pHit[ax1] - lo[ax1]) / (hi[ax1] - lo[ax1]);
-        Point2f uv = Point2f(u, v);
+        Point2f uv = geometry.Uv(pHit);
 
+        // TODO dont cheese
         Vector3f dpdu = Vector3f(-1, 0, 0);
         Vector3f dpdv = Vector3f(0, 1, 0);
-
         Normal3f dndu = Normal3f(0, 0, 0);
         Normal3f dndv = Normal3f(0, 0, 0);
 
-        if (tHit) *tHit = t;
         if (isect) *isect = SurfaceInteraction(pHit, error, uv, -ray.d,
-                                    dpdu, dpdv, dndu, dndv,
-                                    ray.wvls, ray.time, this);
-
+                                               dpdu, dpdv, dndu, dndv,
+                                               ray.wvls, ray.time, this);
         return true;
     }
 
     return false;
 }
 
-Interaction AAPlane::Sample(const Point2f &u, Float *pdf) const {
+Interaction AAPlaneShape::Sample(const Point2f &u, Float *pdf) const {
 
     Interaction it;
-    it.p = Point3f(0, 0, 0);
-    it.p[ax] = lo[ax];
-    it.p[ax0] = lo[ax0] + (hi[ax0] - lo[ax0]) * u.x;
-    it.p[ax1] = lo[ax1] + (hi[ax1] - lo[ax1]) * u.y;
-
-    it.n = n;
+    it.p = geometry.Sample(u, pdf);
+    it.n = geometry.Normal();
     it.pError = Vector3f(0.1, 0.1, 0.1);
-
-    *pdf = 1 / Area();
+    *pdf = 1 / geometry.Area();
     return it;
 }
 
@@ -74,9 +60,10 @@ std::shared_ptr<Shape> CreateAAPlaneShape(
     Point3f lo = params.FindOnePoint3f("lo", Point3f(0, 0, 0));
     Point3f hi = params.FindOnePoint3f("hi", Point3f(0, 0, 0));
     int ax = params.FindOneInt("axis", 2);
-    Normal3f n = params.FindOneNormal3f("n", Normal3f(1, 0, 0));
+    bool facingFw = params.FindOneBool("facingFw", true);
+    std::cout << "ax: " << ax << std::endl;
 
-    return std::make_shared<AAPlane>(o2w, w2o, reverseOrientation, lo, hi, ax, n);
+    return std::make_shared<AAPlaneShape>(o2w, w2o, reverseOrientation, lo, hi, ax, facingFw);
 }
 
 }
