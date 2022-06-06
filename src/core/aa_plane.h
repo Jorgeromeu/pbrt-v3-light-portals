@@ -21,7 +21,7 @@ public:
             facingFw(facingForwards),
             ax(axis),
             ax0(axis == 2 ? 0 : (axis == 0 ? 1 : 2)),
-            ax1(axis == 2 ? 1 : (axis == 1 ? 2 : 0)) {
+            ax1(axis == 2 ? 1 : (axis == 0 ? 2 : 0)) {
         area = (hi[ax0] - lo[ax0]) * (hi[ax1] - lo[ax1]);
     }
 
@@ -40,7 +40,11 @@ public:
 
     Point3f V3() const;
 
-    Point3f Sample(const Point2f &u, Float *pdf) const;
+    Point3f Sample_wrt_Area(const Point2f &u, Float *pdf) const;
+
+    Point3f Sample_wrt_SolidAngle(const Point3f& ref,
+                                  const Point2f &u,
+                                  Vector3f* wi, Float *pdf) const;
 
     Float Area() const;
 

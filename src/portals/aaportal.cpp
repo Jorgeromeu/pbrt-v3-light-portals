@@ -17,6 +17,16 @@ AAPortal::AAPortal(const Point3f &lo, const Point3f &hi,
     Point3f p2 = portal.V2();
     Point3f p3 = portal.V3();
 
+//    LOG(INFO) << "DBG POINT:" << light.V0() << "; li0";
+//    LOG(INFO) << "DBG POINT:" << light.V1() << "; li1";
+//    LOG(INFO) << "DBG POINT:" << light.V2() << "; li2";
+//    LOG(INFO) << "DBG POINT:" << light.V3() << "; li3";
+//
+//    LOG(INFO) << "DBG POINT:" << p0 << "; p0";
+//    LOG(INFO) << "DBG POINT:" << p1 << "; p1";
+//    LOG(INFO) << "DBG POINT:" << p2 << "; p2";
+//    LOG(INFO) << "DBG POINT:" << p3 << "; p3";
+
     // Frustum diagonal directions
     auto fd0 = Normalize(p0 - light.V2());
     auto fd1 = Normalize(p1 - light.V3());
@@ -47,10 +57,10 @@ AAPortal::AAPortal(const Point3f &lo, const Point3f &hi,
 //    LOG(INFO) << "DBG POINT:" << fp2;
 //    LOG(INFO) << "DBG POINT:" << fp3;
 //
-//    LOG(INFO) << "DBG DIR-WHITE:" << p0 << ";" << fd0;
-//    LOG(INFO) << "DBG DIR-BLUE:" << p1 << ";" << fd1;
-//    LOG(INFO) << "DBG DIR-GREEN:" << p2 << ";" << fd2;
-//    LOG(INFO) << "DBG DIR-RED:" << p3 << ";" << fd3;
+//    LOG(INFO) << "DBG DIR-WHITE:" << p0 << ";" << fd0 << ";p0";
+//    LOG(INFO) << "DBG DIR-BLUE:" << p1 << ";" << fd1 << ";p1";
+//    LOG(INFO) << "DBG DIR-GREEN:" << p2 << ";" << fd2 << ";p2";
+//    LOG(INFO) << "DBG DIR-RED:" << p3 << ";" << fd3 << ";p3";
 //    LOG(INFO) << "DBG DIR-CYAN:" << fp0 << ";" << fn0;
 //    LOG(INFO) << "DBG DIR-CYAN:" << fp1 << ";" << fn1;
 //    LOG(INFO) << "DBG DIR-CYAN:" << fp2 << ";" << fn2;
@@ -65,7 +75,7 @@ void AAPortal::SamplePortal(const Interaction &ref,
 
     // sample portal uniformly
     Float areaPdf;
-    Point3f sampledPoint = portal.Sample(u, &areaPdf);
+    Point3f sampledPoint = portal.Sample_wrt_Area(u, &areaPdf);
 
     *wi = Normalize(sampledPoint - ref.p);
     *pdf = DistanceSquared(ref.p, sampledPoint) / (AbsDot(portal.Normal(), -*wi) * portal.Area());
@@ -121,18 +131,13 @@ void AAPortal::SampleProj(const Interaction &ref, const Point2f &u,
     Point3f isectHi = Max(portal.lo, projLo);
     Point3f isectLo = Min(portal.hi, projHi);
 
+    // LOG(INFO) << "DBG AABB:" << isectLo << ";" << isectHi;
+
     // TODO: possibly check for bad bounds (or maybe this is slower?)
 
-    Float isectLen0 = isectHi[portal.ax0] - isectLo[portal.ax0];
-    Float isectLen1 = isectHi[portal.ax1] - isectLo[portal.ax1];
-
-    Point3f sampled = Point3f(0, 0, 0);
-    sampled[portal.ax] = portal.lo[portal.ax];
-    sampled[portal.ax0] = isectLo[portal.ax0] + u.x * isectLen0;
-    sampled[portal.ax1] = isectLo[portal.ax1] + u.x * isectLen1;
-
-    *wi = Normalize(sampled - ref.p);
-    *pdf = DistanceSquared(ref.p, sampled) / (AbsDot(n, -*wi) * isectLen0 * isectLen0);
+    // sample the projection intersection
+    AAPlane isectPlane = AAPlane(isectLo, isectHi, portal.ax, portal.facingFw);
+    isectPlane.Sample_wrt_SolidAngle(ref.p, u, wi, pdf);
 }
 
 Float AAPortal::Pdf_Proj(const Interaction &ref, const Vector3f &wi) const {

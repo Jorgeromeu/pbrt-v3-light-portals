@@ -17,11 +17,10 @@ bool AAPlaneShape::Intersect(const Ray &ray,
                              Float *tHit, SurfaceInteraction* isect,
                              bool testAlphaTexture) const {
 
-    bool hit = geometry.Intersect(ray, tHit);
+    Float t;
+    if (!geometry.Intersect(ray, &t)) return false;
 
-    if (!hit) return false;
-
-    if (*tHit < ray.tMax) {
+    if (t < ray.tMax) {
         Point3f pHit = ray.o + ray.d * *tHit;
         Vector3f error = Vector3f(0.01, 0.01, 0.01);
 
@@ -33,6 +32,7 @@ bool AAPlaneShape::Intersect(const Ray &ray,
         Normal3f dndu = Normal3f(0, 0, 0);
         Normal3f dndv = Normal3f(0, 0, 0);
 
+        if (tHit) *tHit = t;
         if (isect) *isect = SurfaceInteraction(pHit, error, uv, -ray.d,
                                                dpdu, dpdv, dndu, dndv,
                                                ray.wvls, ray.time, this);
@@ -45,7 +45,7 @@ bool AAPlaneShape::Intersect(const Ray &ray,
 Interaction AAPlaneShape::Sample(const Point2f &u, Float *pdf) const {
 
     Interaction it;
-    it.p = geometry.Sample(u, pdf);
+    it.p = geometry.Sample_wrt_Area(u, pdf);
     it.n = geometry.Normal();
     it.pError = Vector3f(0.1, 0.1, 0.1);
     *pdf = 1 / geometry.Area();
@@ -61,7 +61,6 @@ std::shared_ptr<Shape> CreateAAPlaneShape(
     Point3f hi = params.FindOnePoint3f("hi", Point3f(0, 0, 0));
     int ax = params.FindOneInt("axis", 2);
     bool facingFw = params.FindOneBool("facingFw", true);
-    std::cout << "ax: " << ax << std::endl;
 
     return std::make_shared<AAPlaneShape>(o2w, w2o, reverseOrientation, lo, hi, ax, facingFw);
 }

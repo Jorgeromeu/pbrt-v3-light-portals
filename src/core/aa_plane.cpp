@@ -7,7 +7,7 @@ Point3f AAPlane::V0() const {
 }
 
 Point3f AAPlane::V1() const {
-    Point3f v1;
+    Point3f v1(0, 0, 0);
     v1[ax] = lo[ax];
     v1[ax0] = lo[ax0];
     v1[ax1] = hi[ax1];
@@ -19,20 +19,34 @@ Point3f AAPlane::V2() const {
 }
 
 Point3f AAPlane::V3() const {
-    Point3f v2;
+    Point3f v2(0, 0, 0);
     v2[ax] = lo[ax];
     v2[ax0] = hi[ax0];
     v2[ax1] = lo[ax1];
     return v2;
 }
 
-Point3f AAPlane::Sample(const Point2f &u, Float *pdf) const {
+Point3f AAPlane::Sample_wrt_Area(const Point2f &u, Float *pdf) const {
     Point3f p;
     p[ax] = lo[ax];
     p[ax0] = lo[ax0] + (hi[ax0] - lo[ax0]) * u.x;
     p[ax1] = lo[ax1] + (hi[ax1] - lo[ax1]) * u.y;
     *pdf = 1 / area;
     return p;
+}
+
+Point3f AAPlane::Sample_wrt_SolidAngle(const Point3f& ref,
+                                       const Point2f &u,
+                                       Vector3f* wi, Float *pdf) const {
+    Point3f sampled;
+    sampled[ax] = lo[ax];
+    sampled[ax0] = lo[ax0] + (hi[ax0] - lo[ax0]) * u.x;
+    sampled[ax1] = lo[ax1] + (hi[ax1] - lo[ax1]) * u.y;
+
+    *wi = Normalize(sampled - ref);
+    *pdf = DistanceSquared(ref, sampled) / (AbsDot(Normal(), -*wi) * Area());
+
+    return sampled;
 }
 
 Float AAPlane::Area() const {

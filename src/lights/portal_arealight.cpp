@@ -30,10 +30,10 @@ Spectrum PortalArealight::EstimateDirect(const Interaction &it,
                                          const Scene &scene, bool specular) {
 
     // randomly choose the portal
-    selectedPortal = std::floor(u1.x * portals.size() + 1);
+    selectedPortal = std::floor(u1.x * portals.size() + 1) - 1;
     if (selectedPortal >= portals.size()) selectedPortal = portals.size() - 1;
 
-    //    for (int i=0; i<portals.size(); i++) {
+//    for (int i=0; i<portals.size(); i++) {
 //        if (portals[i].InFront(it.p))  {
 //            selectedPortal = i;
 //        }
@@ -41,20 +41,20 @@ Spectrum PortalArealight::EstimateDirect(const Interaction &it,
 
 
     if (!portals[selectedPortal].InFront(it.p)) {
-//         Float rgb[3] = {1, 0, 0};
-//         return RGBSpectrum::FromRGB(rgb);
-        return EstimateDirectLight(it, u1, u2, scene, specular);
+         // Float rgb[3] = {1, 0, 0};
+         // return RGBSpectrum::FromRGB(rgb);
+         return EstimateDirectLight(it, u1, u2, scene, specular);
     }
 
     // if not in frustum, return black
     if (!portals[selectedPortal].InFrustum(it.p)) {
-//         Float rgb[3] = {0, 1, 0};
-//         return RGBSpectrum::FromRGB(rgb);
-        return 0;
+         // Float rgb[3] = {0, 1, 0};
+         // return RGBSpectrum::FromRGB(rgb);
+         return 0;
     }
 
-//     Float rgb[3] = {0, 0, 1};
-//     return RGBSpectrum::FromRGB(rgb);
+     // Float rgb[3] = {0, 0, selectedPortal / 10.0f};
+     // return RGBSpectrum::FromRGB(rgb);
 
     if (strat == PortalStrategy::SampleUniformPortal) {
         return EstimateDirectPortal(it, u1, u2, scene, specular);
@@ -65,7 +65,7 @@ Spectrum PortalArealight::EstimateDirect(const Interaction &it,
     }
 
     else if (strat == PortalStrategy::SampleProjection) {
-        return EstimateDirectProj(it, u1, u2, scene, specular);
+        return EstimateDirectProj(it, u1, u2, scene, specular) / (1.0f / (float) portals.size());
     }
 
     return 0;
@@ -92,6 +92,7 @@ Spectrum PortalArealight::EstimateDirectLight(const Interaction &it,
     // SAMPLE LIGHT
     Li = Sample_Li(it, u1, &wi, &pdf, &vis);
 
+
     if (!Li.IsBlack() && pdf > 0) {
 
         SurfaceInteraction lightIsect;
@@ -99,6 +100,7 @@ Spectrum PortalArealight::EstimateDirectLight(const Interaction &it,
         if (scene.Intersect(ray, &lightIsect)) {
             Li = lightIsect.Le(-wi);
         }
+
 
         // compute BSDF for sampled direction
         f = ref.bsdf->f(ref.wo, wi, bsdfFlags) * AbsDot(wi, ref.shading.n);
@@ -173,6 +175,8 @@ Spectrum PortalArealight::EstimateDirectProj(const Interaction &it,
     // SAMPLE PORTAL
     portals[selectedPortal].SampleProj(ref, u1, &wi, &projPdf);
 
+    LOG(INFO) << "DBG DIR:" << ref.p << ";" << wi;
+
     if (projPdf > 0) {
 
         // get direct illumination from sampled direction
@@ -182,6 +186,7 @@ Spectrum PortalArealight::EstimateDirectProj(const Interaction &it,
         if (scene.Intersect(ray, &lightIsect)) {
             Li = lightIsect.Le(-wi);
         }
+
 
         // compute BSDF for sampled direction
         f = ref.bsdf->f(ref.wo, wi, bsdfFlags) * AbsDot(wi, ref.shading.n);
@@ -229,9 +234,9 @@ std::shared_ptr<PortalArealight> CreateAAPortal(
             Float hiZ = std::stof(portalSexpr.getChild(6).toString());
 
             int axis = std::stoi(portalSexpr.getChild(7).toString());
-            bool greater = portalSexpr.getChild(8).toString() == "+";
+            bool facingFw = portalSexpr.getChild(8).toString() == "+";
 
-            portals.emplace_back(Point3f(loX, loY, loZ), Point3f(hiX, hiY, hiZ), axis, greater, *shape);
+            portals.emplace_back(Point3f(loX, loY, loZ), Point3f(hiX, hiY, hiZ), axis, facingFw, *shape);
         }
     }
 
