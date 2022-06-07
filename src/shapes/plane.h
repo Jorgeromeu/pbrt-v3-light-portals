@@ -20,7 +20,7 @@ public:
                  int axis,
                  bool facingFw)
             : Shape(ObjectToWorld, WorldToObject, reverseOrientation),
-              geometry(AAPlane(lo, hi, axis, facingFw)) {
+              geometry(AAPlane(lo, hi, axis, facingFw, ObjectToWorld, WorldToObject)) {
     }
 
     // bounds

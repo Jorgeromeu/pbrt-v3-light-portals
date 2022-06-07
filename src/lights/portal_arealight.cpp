@@ -58,9 +58,9 @@ Spectrum PortalArealight::EstimateDirect(const Interaction &it,
             continue;
         }
 
-        // dist[i] = 1;
         // dist[i] = 1 / DistanceSquared(it.p, portals[i].portal.V0());
         // dist[i] = portals[i].portal.Area();
+        dist[i] = 1;
         sum += dist[i];
     }
 

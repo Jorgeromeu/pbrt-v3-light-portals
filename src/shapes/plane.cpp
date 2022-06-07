@@ -17,11 +17,12 @@ bool AAPlaneShape::Intersect(const Ray &ray,
                              Float *tHit, SurfaceInteraction* isect,
                              bool testAlphaTexture) const {
 
+
     Float t;
     if (!geometry.Intersect(ray, &t)) return false;
 
     if (t < ray.tMax) {
-        Point3f pHit = ray.o + ray.d * *tHit;
+        Point3f pHit = ray.o + ray.d * t;
         Vector3f error = Vector3f(0.01, 0.01, 0.01);
 
         Point2f uv = geometry.Uv(pHit);
@@ -33,9 +34,9 @@ bool AAPlaneShape::Intersect(const Ray &ray,
         Normal3f dndv = Normal3f(0, 0, 0);
 
         if (tHit) *tHit = t;
-        if (isect) *isect = SurfaceInteraction(pHit, error, uv, -ray.d,
+        if (isect) *isect = (*ObjectToWorld)(SurfaceInteraction(pHit, error, uv, -ray.d,
                                                dpdu, dpdv, dndu, dndv,
-                                               ray.wvls, ray.time, this);
+                                               ray.wvls, ray.time, this));
         return true;
     }
 

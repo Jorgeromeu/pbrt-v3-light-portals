@@ -48,7 +48,6 @@ Point3f AAPlane::Sample_wrt_SolidAngle(const Point3f& ref,
 
     return sampled;
 }
-
 Float AAPlane::Area() const {
     return area;
 }
@@ -65,13 +64,19 @@ Normal3f AAPlane::Normal() const {
 }
 
 bool AAPlane::Intersect(const Ray &ray, Float *tHit) const {
-    Float t = (lo[ax] - ray.o[ax]) / ray.d[ax];
-    Point3f pHit = ray.o + t * ray.d;
 
-    if (pHit[ax0] > lo[ax0] &&
-        pHit[ax0] < hi[ax0] &&
-        pHit[ax1] > lo[ax1] &&
-        pHit[ax1] < hi[ax1]) {
+    // convert ray to object space
+    Vector3f oErr, dErr;
+    Ray rayT = (*w2o)(ray, &oErr, &dErr);
+
+    Float t = (lo[ax] - rayT.o[ax]) / ray.d[ax];
+    Point3f pHit = rayT.o + t * rayT.d;
+
+    // check intersection in object space
+    if (pHit[ax0] > (*w2o)(lo)[ax0] &&
+        pHit[ax0] < (*w2o)(hi)[ax0] &&
+        pHit[ax1] > (*w2o)(lo)[ax1] &&
+        pHit[ax1] < (*w2o)(hi)[ax1]) {
 
         if (tHit) *tHit = t;
         return true;

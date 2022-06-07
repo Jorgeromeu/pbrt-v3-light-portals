@@ -2,6 +2,7 @@
 #define PBRT_V3_AA_PLANE_H
 
 #include "geometry.h"
+#include "transform.h"
 
 namespace pbrt {
 
@@ -15,7 +16,11 @@ public:
     AAPlane(const Point3f &lo,
             const Point3f &hi,
             int axis,
-            bool facingForwards) :
+            bool facingForwards,
+            Transform* o2w,
+            Transform* w2o
+            ) :
+            w2o(w2o),
             lo(lo),
             hi(hi),
             facingFw(facingForwards),
@@ -31,6 +36,9 @@ public:
     const int ax;
     const int ax0;
     const int ax1;
+
+    const Transform* w2o;
+    const Transform* o2o;
 
     Point3f V0() const;
 

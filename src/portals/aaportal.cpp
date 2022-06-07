@@ -8,7 +8,8 @@
 AAPortal::AAPortal(const Point3f &lo, const Point3f &hi,
                    int axis, bool facingFw,
                    AAPlaneShape &lightShape) :
-        portal(AAPlane(lo, hi, axis, facingFw)),
+                   // TODO fix
+        portal(AAPlane(lo, hi, axis, facingFw, new Transform(), new Transform())),
         light(lightShape.geometry) {
 
     // Calculate viewing frustum
@@ -136,7 +137,8 @@ void AAPortal::SampleProj(const Interaction &ref, const Point2f &u,
     // TODO: possibly check for bad bounds (or maybe this is slower?)
 
     // sample the projection intersection
-    AAPlane isectPlane = AAPlane(isectLo, isectHi, portal.ax, portal.facingFw);
+    // TODO fix
+    AAPlane isectPlane = AAPlane(isectLo, isectHi, portal.ax, portal.facingFw, new Transform(), new Transform());
     isectPlane.Sample_wrt_SolidAngle(ref.p, u, wi, pdf);
 }
 
