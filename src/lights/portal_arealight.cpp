@@ -215,8 +215,6 @@ Spectrum PortalArealight::EstimateDirectProj(const Interaction &it,
     // SAMPLE PORTAL
     portals[selectedPortal].SampleProj(ref, u1, &wi, &projPdf);
 
-    LOG(INFO) << "DBG DIR:" << ref.p << ";" << wi;
-
     if (projPdf > 0) {
 
         // get direct illumination from sampled direction
