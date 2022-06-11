@@ -70,7 +70,7 @@ WorldBegin
 
 	AttributeBegin
 		AreaLightSource "portal" "rgb L" [ 10.0 10.0 10.0 ]
-		"string strategy" "light"
+		"string strategy" "projection"
 	    "string portalData" "((AA -1.2877 -1.26043 6.11473 1.2877 1.26043 6.11473 2 -) (AA -0.793266 -0.776447 8.32176 0.776447 0.776447 8.32176 2 +))"
 		"bool twosided" "true"
         Shape "aaplane"

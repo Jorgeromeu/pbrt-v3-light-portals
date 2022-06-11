@@ -7,9 +7,10 @@
 
 AAPortal::AAPortal(const Point3f &lo, const Point3f &hi,
                    int axis, bool facingFw,
-                   AAPlaneShape &lightShape) :
-        portal(AAPlane(lo, hi, axis, facingFw)),
-        light(lightShape.geometry) {
+                   AAPlaneShape &light) :
+                   // TODO fix
+        portal(AAPlaneShape(light.ObjectToWorld, light.WorldToObject, !facingFw, lo, hi, axis, facingFw)),
+        light(light) {
 
     // Calculate viewing frustum
     Point3f p0 = portal.V0();
@@ -75,7 +76,7 @@ void AAPortal::SamplePortal(const Interaction &ref,
 
     // sample portal uniformly
     Float areaPdf;
-    Point3f sampledPoint = portal.Sample_wrt_Area(u, &areaPdf);
+    Point3f sampledPoint = portal.Sample(u, &areaPdf).p;
 
     *wi = Normalize(sampledPoint - ref.p);
     *pdf = DistanceSquared(ref.p, sampledPoint) / (AbsDot(portal.Normal(), -*wi) * portal.Area());
@@ -86,7 +87,7 @@ Float AAPortal::Pdf_Portal(const Interaction &ref, const Vector3f &wi) const {
     // ax aligned across z ax, plane intersection
     Ray r = ref.SpawnRay(wi);
     Float tHit;
-    if (portal.Intersect(r, &tHit)) {
+    if (portal.IntersectP(r)) {
         return DistanceSquared(ref.p, (r.o + r.d * tHit)) / (AbsDot(portal.Normal(), -Normalize(wi)) * portal.Area());
     }
 
@@ -94,10 +95,13 @@ Float AAPortal::Pdf_Portal(const Interaction &ref, const Vector3f &wi) const {
 }
 
 bool AAPortal::InFront(const Point3f &p) const {
-    return portal.InFront(p);
+    return portal.InFront((*light.WorldToObject)(p));
 }
 
 bool AAPortal::InFrustum(const Point3f &p) const {
+
+    return true;
+
     bool res = true;
     res &= Dot(fp0 - p, fn0) >= 0;
     res &= Dot(fp1 - p, fn1) >= 0;
@@ -109,6 +113,9 @@ bool AAPortal::InFrustum(const Point3f &p) const {
 
 void AAPortal::SampleProj(const Interaction &ref, const Point2f &u,
                           Vector3f *wi, Float *pdf) const {
+
+    // bring reference point to world space
+    Point3f pRef = (*portal.WorldToObject)(ref.p);
 
     // TODO make efficient :))
     // can make it faster by only doing math w x and y, not Z
@@ -131,13 +138,24 @@ void AAPortal::SampleProj(const Interaction &ref, const Point2f &u,
     Point3f isectHi = Max(portal.lo, projLo);
     Point3f isectLo = Min(portal.hi, projHi);
 
-    // LOG(INFO) << "DBG AABB:" << isectLo << ";" << isectHi;
 
     // TODO: possibly check for bad bounds (or maybe this is slower?)
 
     // sample the projection intersection
-    AAPlane isectPlane = AAPlane(isectLo, isectHi, portal.ax, portal.facingFw);
-    isectPlane.Sample_wrt_SolidAngle(ref.p, u, wi, pdf);
+    Float isectLen0 = isectHi[portal.ax0] - isectLo[portal.ax0];
+    Float isectLen1 = isectHi[portal.ax1] - isectLo[portal.ax1];
+
+    Point3f sampled;
+    sampled[portal.ax] = portal.lo[portal.ax];
+    sampled[portal.ax0] = isectLo[portal.ax0] + u.x * isectLen0;
+    sampled[portal.ax1] = isectLo[portal.ax1] + u.x * isectLen1;
+
+    // bring back to world space
+    Point3f sampledWorld = (*portal.WorldToObject)(sampled);
+    LOG(INFO) << "DBG POINT:" << sampledWorld;
+
+    *wi = sampledWorld - ref.p;
+    *pdf = DistanceSquared(ref.p, sampled) / (AbsDot(portal.Normal(), -*wi) * (isectLen0 * isectLen1));
 }
 
 Float AAPortal::Pdf_Proj(const Interaction &ref, const Vector3f &wi) const {

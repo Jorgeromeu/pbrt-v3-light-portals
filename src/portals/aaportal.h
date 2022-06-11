@@ -12,7 +12,7 @@ class AAPortal : public Portal {
 public:
 
     AAPortal(const Point3f& lo, const Point3f& hi, int axis, bool facingFw,
-             AAPlaneShape &lightShape);
+             AAPlaneShape &light);
 
     bool InFrustum(const Point3f &p) const override;
 
@@ -34,13 +34,10 @@ public:
                    const Vector3f &wi) const override;
 
     // light geometry
-    const AAPlane& light;
+    const AAPlaneShape& light;
 
     // portal geometry
-    const AAPlane portal;
-
-    Normal3f n;
-    Float area;
+    const AAPlaneShape portal;
 
     // frustum data
     // point and normal for each frustum plane

@@ -88,6 +88,7 @@ struct Distribution1D {
         return (offset + du) / Count();
     }
     int SampleDiscrete(Float u, Float *pdf = nullptr,
+
                        Float *uRemapped = nullptr) const {
         // Find surrounding CDF segments and _offset_
         int offset = FindInterval((int)cdf.size(),

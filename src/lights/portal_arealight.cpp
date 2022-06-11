@@ -8,6 +8,7 @@
 #include "diffuse.h"
 #include "scene.h"
 #include "ext/sexpresso.hpp"
+#include "sampling.h"
 
 namespace pbrt {
 
@@ -29,43 +30,82 @@ Spectrum PortalArealight::EstimateDirect(const Interaction &it,
                                          const Point2f &u1, const Point2f &u2,
                                          const Scene &scene, bool specular) {
 
+
+    if (strat == PortalStrategy::SampleUniformLight) {
+        return EstimateDirectLight(it, u1, u2, scene, specular);
+    }
+
     // randomly choose the portal
-    selectedPortal = std::floor(u1.x * portals.size() + 1) - 1;
-    if (selectedPortal >= portals.size()) selectedPortal = portals.size() - 1;
+    Float portalPdf;
 
-//    for (int i=0; i<portals.size(); i++) {
-//        if (portals[i].InFront(it.p))  {
-//            selectedPortal = i;
-//        }
-//    }
+    // RANDOM VISIBLE PORTAL
+    Float dist[portals.size()];
+    Float sum = 0;
 
+    bool behindAll = true;
+
+    for (int i=0; i<portals.size(); i++) {
+
+        if (!portals[i].InFront(it.p)) {
+            dist[i] = 0;
+            continue;
+        }
+
+        behindAll = false;
+
+        if (!portals[i].InFrustum(it.p)) {
+            dist[i] = 0;
+            continue;
+        }
+
+        // dist[i] = 1 / DistanceSquared(it.p, portals[i].portal.V0());
+        // dist[i] = portals[i].portal.Area();
+        dist[i] = 1;
+        sum += dist[i];
+    }
+
+    // behind all portals
+    if (behindAll) {
+        return EstimateDirectLight(it, u1, u2, scene, specular);
+    }
+
+    // outside of all frustums
+    if (sum == 0) {
+        return 0;
+    }
+
+    // inside at least one frustum
+
+    // normalize
+    for (int i=0; i<portals.size(); i++) {
+        dist[i] /= sum;
+    }
+
+    Distribution1D portalDistrib = Distribution1D(dist, (int) portals.size());
+    selectedPortal = portalDistrib.SampleDiscrete(u1.x, &portalPdf);
 
     if (!portals[selectedPortal].InFront(it.p)) {
-         // Float rgb[3] = {1, 0, 0};
-         // return RGBSpectrum::FromRGB(rgb);
-         return EstimateDirectLight(it, u1, u2, scene, specular);
+        // Float rgb[3] = {1, 0, 0};
+        // return RGBSpectrum::FromRGB(rgb);
+        return EstimateDirectLight(it, u1, u2, scene, specular);
     }
 
     // if not in frustum, return black
     if (!portals[selectedPortal].InFrustum(it.p)) {
-         // Float rgb[3] = {0, 1, 0};
-         // return RGBSpectrum::FromRGB(rgb);
-         return 0;
+        // Float rgb[3] = {0, 1, 0};
+        // return RGBSpectrum::FromRGB(rgb);
+        return 0;
     }
 
-     // Float rgb[3] = {0, 0, selectedPortal / 10.0f};
-     // return RGBSpectrum::FromRGB(rgb);
+    // Float rgb[3] = {0, 0, selectedPortal / 10.0f};
+    // return RGBSpectrum::FromRGB(rgb);
 
     if (strat == PortalStrategy::SampleUniformPortal) {
         return EstimateDirectPortal(it, u1, u2, scene, specular);
-    }
-
-    else if (strat == PortalStrategy::SampleUniformLight) {
+    } else if (strat == PortalStrategy::SampleUniformLight) {
         return EstimateDirectLight(it, u1, u2, scene, specular);
-    }
-
-    else if (strat == PortalStrategy::SampleProjection) {
-        return EstimateDirectProj(it, u1, u2, scene, specular) / (1.0f / (float) portals.size());
+    } else if (strat == PortalStrategy::SampleProjection) {
+        return EstimateDirectProj(it, u1, u2, scene, specular) / portalPdf;
     }
 
     return 0;
@@ -77,7 +117,7 @@ Spectrum PortalArealight::EstimateDirectLight(const Interaction &it,
                                               const Scene &scene, bool specular) const {
 
     // cast reference point to surface interaction
-    const auto &ref = (const SurfaceInteraction &)it;
+    const auto &ref = (const SurfaceInteraction &) it;
 
     // reused variables
     BxDFType bsdfFlags = specular ? BSDF_ALL : BxDFType(BSDF_ALL & ~BSDF_SPECULAR);
@@ -121,7 +161,7 @@ Spectrum PortalArealight::EstimateDirectPortal(const Interaction &it,
 
 
     // cast reference point to surface interaction
-    const auto &ref = (const SurfaceInteraction &)it;
+    const auto &ref = (const SurfaceInteraction &) it;
 
     // reused variables
     BxDFType bsdfFlags = specular ? BSDF_ALL : BxDFType(BSDF_ALL & ~BSDF_SPECULAR);
@@ -162,7 +202,7 @@ Spectrum PortalArealight::EstimateDirectProj(const Interaction &it,
                                              const Scene &scene, bool specular) const {
 
     // cast reference point to surface interaction
-    const auto &ref = (const SurfaceInteraction &)it;
+    const auto &ref = (const SurfaceInteraction &) it;
 
     // reused variables
     BxDFType bsdfFlags = specular ? BSDF_ALL : BxDFType(BSDF_ALL & ~BSDF_SPECULAR);
@@ -174,8 +214,6 @@ Spectrum PortalArealight::EstimateDirectProj(const Interaction &it,
 
     // SAMPLE PORTAL
     portals[selectedPortal].SampleProj(ref, u1, &wi, &projPdf);
-
-    LOG(INFO) << "DBG DIR:" << ref.p << ";" << wi;
 
     if (projPdf > 0) {
 
@@ -219,7 +257,7 @@ std::shared_ptr<PortalArealight> CreateAAPortal(
     auto parseTree = sexpresso::parse(portalData).getChild(0);
     std::vector<AAPortal> portals = {};
 
-    for (int i=0; i<parseTree.childCount(); i++) {
+    for (int i = 0; i < parseTree.childCount(); i++) {
 
         auto portalSexpr = parseTree.getChild(i);
         auto type = portalSexpr.getChild(0).toString();
@@ -239,7 +277,6 @@ std::shared_ptr<PortalArealight> CreateAAPortal(
             portals.emplace_back(Point3f(loX, loY, loZ), Point3f(hiX, hiY, hiZ), axis, facingFw, *shape);
         }
     }
-
 
 
     PortalStrategy strategy;
