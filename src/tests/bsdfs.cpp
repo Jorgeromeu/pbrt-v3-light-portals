@@ -160,7 +160,7 @@ Float AdaptiveSimpson(const std::function<Float(Float)>& f, Float x0, Float x1,
 Float AdaptiveSimpson2D(const std::function<Float(Float, Float)>& f, Float x0,
                         Float y0, Float x1, Float y1, Float eps = 1e-6f,
                         int depth = 6) {
-    /* Lambda function that integrates over the X axis */
+    /* Lambda function that integrates over the X ax */
     auto integrate = [&](Float y) {
         return AdaptiveSimpson(std::bind(f, std::placeholders::_1, y), x0, x1,
                                eps, depth);
@@ -259,10 +259,10 @@ void DumpTables(const Float* frequencies, const Float* expFrequencies,
       << "clf; subplot(2,1,1);" << std::endl
       << "imagesc(frequencies);" << std::endl
       << "title('Observed frequencies');" << std::endl
-      << "axis equal;" << std::endl
+      << "ax equal;" << std::endl
       << "subplot(2,1,2);" << std::endl
       << "imagesc(expFrequencies);" << std::endl
-      << "axis equal;" << std::endl
+      << "ax equal;" << std::endl
       << "title('Expected frequencies');" << std::endl;
     f.close();
 }

@@ -164,7 +164,7 @@ void KdTreeAccel::buildTree(int nodeNum, const Bounds3f &nodeBounds,
 
     // Initialize interior node and continue recursion
 
-    // Choose split axis position for interior node
+    // Choose split ax position for interior node
     int bestAxis = -1, bestOffset = -1;
     Float bestCost = Infinity;
     Float oldCost = isectCost * Float(nPrimitives);
@@ -172,7 +172,7 @@ void KdTreeAccel::buildTree(int nodeNum, const Bounds3f &nodeBounds,
     Float invTotalSA = 1 / totalSA;
     Vector3f d = nodeBounds.pMax - nodeBounds.pMin;
 
-    // Choose which axis to split along
+    // Choose which ax to split along
     int axis = nodeBounds.MaximumExtent();
     int retries = 0;
 retrySplit:

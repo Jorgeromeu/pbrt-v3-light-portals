@@ -64,7 +64,7 @@
 #include "integrators/volpath.h"
 #include "integrators/whitted.h"
 #include "lights/diffuse.h"
-#include "lights/portal_light.h"
+#include "lights/portal_arealight.h"
 #include "lights/distant.h"
 #include "lights/goniometric.h"
 #include "lights/infinite.h"
@@ -775,9 +775,8 @@ std::shared_ptr<AreaLight> MakeAreaLight(const std::string &name,
         area = CreateDiffuseAreaLight(light2world, mediumInterface.outside,
                                       paramSet, shape);
     else if (name == "portal") {
-
-        auto trianglePtr = std::dynamic_pointer_cast<Triangle>(shape);
-        area = CreatePortalLight(light2world, mediumInterface.outside, paramSet, trianglePtr);
+        auto aaplanePtr = std::dynamic_pointer_cast<AAPlaneShape>(shape);
+        area = CreateAAPortal(light2world, mediumInterface.outside, paramSet, aaplanePtr);
     }
     else
         Warning("Area light \"%s\" unknown.", name.c_str());
@@ -1439,7 +1438,8 @@ void pbrtShape(const std::string &name, const ParamSet &params) {
 }
 
 void pbrtPortal(const std::string &name, const ParamSet &params) {
-        VERIFY_WORLD("PortalLightSource");
+        VERIFY_WORLD("AAPortal");
+
         std::vector<std::shared_ptr<Primitive>> prims;
         std::vector<std::shared_ptr<AreaLight>> areaLights;
         if (PbrtOptions.cat || (PbrtOptions.toPly && name != "trianglemesh")) {
