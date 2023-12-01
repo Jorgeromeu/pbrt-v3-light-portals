@@ -1,3 +1,6 @@
+# PBRT-v3: Light Portals
+Forked from [PBRT-v3](https://github.com/mmp/pbrt-v3), and augmented to include light portals, as described in [Efficient Direct lighting calculations for area lights with light portals](https://repository.tudelft.nl/islandora/object/uuid%3A4dce4cc5-d6dc-431e-860f-b5c52ec17ba6)
+
 pbrt, Version 3
 ===============
 
